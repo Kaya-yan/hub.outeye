@@ -27,8 +27,11 @@ export function HeroSection() {
 
       <div className="relative z-10 mx-auto w-full max-w-7xl items-center gap-8 lg:grid lg:grid-cols-[1.6fr_1fr]">
         {/* Left: Text */}
-        <div>
-          {/* Subtitle with gradient flow */}
+        <div className="relative">
+          {/* Vertical anchor line */}
+          <div className="absolute -left-4 top-0 h-24 w-px bg-gradient-to-b from-transparent via-brand-cyan/40 to-transparent hidden lg:block" />
+
+          {/* Subtitle */}
           <motion.p
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -52,7 +55,7 @@ export function HeroSection() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}
-            className="mt-4 lg:mt-5 text-base lg:text-lg text-neutral-500 dark:text-neutral-400 leading-relaxed"
+            className="mt-4 lg:mt-5 text-base lg:text-lg text-neutral-500 dark:text-neutral-400 leading-[1.8]"
           >
             山东大学翻译学院本科生 · 中共党员
             <br />
@@ -121,7 +124,7 @@ export function HeroSection() {
           initial={{ opacity: 0, scale: 0.92 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.7, delay: 0.15 }}
-          className="hidden lg:block"
+          className="hidden lg:block lg:mt-16"
         >
           <TiltPhoto />
         </motion.div>

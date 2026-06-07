@@ -11,13 +11,12 @@ interface Particle {
   opacity: number;
 }
 
-const PARTICLE_COUNT = 60;
+const PARTICLE_COUNT = 30;
 const CONNECT_DIST = 120;
 const CONNECT_DIST_SQ = CONNECT_DIST * CONNECT_DIST;
 const MOUSE_RADIUS = 150;
 const MOUSE_FORCE = 0.02;
 const BRAND_CYAN = { r: 6, g: 182, b: 212 };
-const BRAND_VIOLET = { r: 139, g: 92, b: 246 };
 
 function createParticles(w: number, h: number): Particle[] {
   return Array.from({ length: PARTICLE_COUNT }, () => ({
@@ -80,13 +79,9 @@ export function ParticleField() {
           if (distSq > CONNECT_DIST_SQ) continue;
 
           const dist = Math.sqrt(distSq);
-          const alpha = (1 - dist / CONNECT_DIST) * 0.12;
-          const t = i / ps.length;
-          const r = BRAND_CYAN.r + (BRAND_VIOLET.r - BRAND_CYAN.r) * t;
-          const g = BRAND_CYAN.g + (BRAND_VIOLET.g - BRAND_CYAN.g) * t;
-          const b = BRAND_CYAN.b + (BRAND_VIOLET.b - BRAND_CYAN.b) * t;
+          const alpha = (1 - dist / CONNECT_DIST) * 0.06;
 
-          ctx.strokeStyle = `rgba(${r},${g},${b},${alpha})`;
+          ctx.strokeStyle = `rgba(6,182,212,${alpha})`;
           ctx.lineWidth = 0.5;
           ctx.beginPath();
           ctx.moveTo(ps[i].x, ps[i].y);
