@@ -93,6 +93,14 @@ const allHonors = [
   { year: "2022", title: "国防科技大学心理骨干聘书", level: "校级", image: "/assets/images/honors/nudt-psychology.jpg" },
 ];
 
+function getLevelColor(level: string) {
+  if (level.includes("国家级")) return { bg: "bg-red-500", text: "text-red-400", border: "border-red-500/30", hoverBorder: "hover:border-red-500/50", hoverShadow: "hover:shadow-[0_8px_30px_rgba(239,68,68,0.15)]", dot: "bg-red-500" };
+  if (level.includes("省级") || level.includes("学术")) return { bg: "bg-amber-500", text: "text-amber-400", border: "border-amber-500/30", hoverBorder: "hover:border-amber-500/50", hoverShadow: "hover:shadow-[0_8px_30px_rgba(245,158,11,0.15)]", dot: "bg-amber-500" };
+  if (level.includes("校级")) return { bg: "bg-blue-500", text: "text-blue-400", border: "border-blue-500/30", hoverBorder: "hover:border-blue-500/50", hoverShadow: "hover:shadow-[0_8px_30px_rgba(59,130,246,0.15)]", dot: "bg-blue-500" };
+  if (level.includes("院级")) return { bg: "bg-cyan-500", text: "text-cyan-400", border: "border-cyan-500/30", hoverBorder: "hover:border-cyan-500/50", hoverShadow: "hover:shadow-[0_8px_30px_rgba(6,182,212,0.15)]", dot: "bg-cyan-500" };
+  return { bg: "bg-brand-cyan", text: "text-brand-cyan", border: "border-brand-cyan/30", hoverBorder: "hover:border-brand-cyan/50", hoverShadow: "hover:shadow-[0_8px_30px_rgba(6,182,212,0.15)]", dot: "bg-brand-cyan" };
+}
+
 export default function HonorsPage() {
   const [lightbox, setLightbox] = useState<{ src: string; alt: string } | null>(null);
 
@@ -103,86 +111,118 @@ export default function HonorsPage() {
         学术竞赛与个人成长的时间线
       </p>
 
-      {/* Core Honors Timeline */}
-      <div className="mt-16 space-y-12">
-        {coreHonors.map((honor, i) => (
-          <motion.div
-            key={honor.title}
-            initial={{ opacity: 0, x: -20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.4, delay: i * 0.1 }}
-            className="relative pl-8 before:absolute before:left-3 before:top-0 before:h-full before:w-px before:bg-gradient-to-b before:from-brand-cyan before:to-brand-violet"
-          >
-            <div className="absolute left-1.5 top-1 h-3 w-3 rounded-full bg-brand-cyan shadow-[0_0_8px_rgba(6,182,212,0.5)]" />
+      {/* Alternating Timeline */}
+      <div className="relative mt-16">
+        {/* Central timeline line — desktop only */}
+        <div className="absolute left-1/2 top-0 hidden h-full w-px -translate-x-1/2 bg-gradient-to-b from-brand-cyan/40 via-brand-cyan/20 to-transparent md:block" />
 
-            <div className="rounded-xl surface-card p-6">
-              <div className="flex items-center gap-3">
-                <span className="text-sm font-mono text-brand-cyan">{honor.year}</span>
-                <span className="rounded bg-black/5 dark:bg-white/5 px-2 py-0.5 text-xs text-muted-foreground">
-                  {honor.level}
-                </span>
-                {honor.status === "进行中" && (
-                  <span className="rounded bg-brand-cyan/10 px-2 py-0.5 text-xs text-brand-cyan">
-                    {honor.status}
-                  </span>
-                )}
-              </div>
+        {/* Mobile left timeline line */}
+        <div className="absolute left-4 top-0 h-full w-px bg-gradient-to-b from-brand-cyan/40 via-brand-cyan/20 to-transparent md:hidden" />
 
-              <h3 className="mt-3 text-lg font-semibold">{honor.title}</h3>
-              {honor.subtitle && (
-                <p className="mt-1 text-sm text-muted-foreground">{honor.subtitle}</p>
-              )}
+        <div className="space-y-12 md:space-y-16">
+          {coreHonors.map((honor, i) => {
+            const isLeft = i % 2 === 0;
+            const colors = getLevelColor(honor.level);
 
-              {honor.status === "进行中" && (
-                <div className="mt-4">
-                  <div className="h-1.5 w-full overflow-hidden rounded-full bg-zinc-200 dark:bg-white/10">
-                    <div
-                      className="h-full rounded-full bg-gradient-to-r from-brand-cyan to-brand-violet"
-                      style={{ width: `${honor.progress}%` }}
-                    />
-                  </div>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {honor.materials.map((m) => (
-                      <span
-                        key={m.name}
-                        className={`rounded-md px-2 py-1 text-xs ${
-                          m.done
-                            ? "bg-emerald-500/10 text-emerald-400"
-                            : "bg-black/5 dark:bg-white/5 text-muted-foreground"
-                        }`}
-                      >
-                        {m.done ? "✓" : "◯"} {m.name}
+            return (
+              <motion.div
+                key={honor.title}
+                initial={{ opacity: 0, x: isLeft ? -30 : 30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.5, delay: i * 0.08 }}
+                className={`relative flex items-start ${
+                  isLeft ? "md:flex-row" : "md:flex-row-reverse"
+                }`}
+              >
+                {/* Desktop: center node */}
+                <div className="absolute left-1/2 top-4 z-10 hidden -translate-x-1/2 md:block">
+                  <div className={`h-4 w-4 rounded-full ${colors.dot} shadow-lg animate-[pulse_2.5s_ease-in-out_infinite]`} />
+                </div>
+
+                {/* Mobile: left node */}
+                <div className="absolute left-2.5 top-4 z-10 md:hidden">
+                  <div className={`h-3.5 w-3.5 rounded-full ${colors.dot} shadow-lg animate-[pulse_2.5s_ease-in-out_infinite]`} />
+                </div>
+
+                {/* Card */}
+                <div className={`ml-10 w-full md:ml-0 md:w-[calc(50%-2rem)] ${isLeft ? "md:pr-0" : "md:pl-0"}`}>
+                  <div
+                    className={`group rounded-xl border bg-card/60 backdrop-blur-sm p-6 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg ${colors.border} ${colors.hoverBorder} ${colors.hoverShadow}`}
+                  >
+                    {/* Header */}
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <span className="text-sm font-mono text-brand-cyan">{honor.year}</span>
+                      <span className={`rounded px-2 py-0.5 text-xs ${colors.text} ${colors.bg}/10`}>
+                        {honor.level}
                       </span>
-                    ))}
+                      {honor.status === "进行中" && (
+                        <span className="rounded bg-brand-cyan/10 px-2 py-0.5 text-xs text-brand-cyan">
+                          {honor.status}
+                        </span>
+                      )}
+                    </div>
+
+                    <h3 className="mt-3 text-lg font-semibold">{honor.title}</h3>
+                    {honor.subtitle && (
+                      <p className="mt-1 text-sm text-muted-foreground">{honor.subtitle}</p>
+                    )}
+
+                    {/* Progress bar for in-progress items */}
+                    {honor.status === "进行中" && (
+                      <div className="mt-4">
+                        <div className="h-1.5 w-full overflow-hidden rounded-full bg-zinc-200 dark:bg-white/10">
+                          <div
+                            className="h-full rounded-full bg-brand-cyan"
+                            style={{ width: `${honor.progress}%` }}
+                          />
+                        </div>
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {honor.materials.map((m) => (
+                            <span
+                              key={m.name}
+                              className={`rounded-md px-2 py-1 text-xs ${
+                                m.done
+                                  ? "bg-emerald-500/10 text-emerald-400"
+                                  : "bg-black/5 dark:bg-white/5 text-muted-foreground"
+                              }`}
+                            >
+                              {m.done ? "✓" : "◯"} {m.name}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Images */}
+                    {honor.images.length > 0 && (
+                      <div className="mt-4 flex gap-2 overflow-x-auto">
+                        {honor.images.map((src) => (
+                          <button
+                            key={src}
+                            onClick={() => setLightbox({ src, alt: honor.title })}
+                            className="relative h-32 w-48 shrink-0 overflow-hidden rounded-lg border border-black/8 dark:border-white/10 cursor-zoom-in transition-transform duration-300 hover:scale-105"
+                          >
+                            <Image src={src} alt={honor.title} fill className="object-cover" sizes="192px" />
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Placeholder for missing images */}
+                    {honor.images.length === 0 && honor.status !== "进行中" && (
+                      <div className="mt-4 flex gap-2">
+                        <div className="h-20 w-28 rounded-lg border border-dashed border-black/8 dark:border-white/10 bg-black/[0.02] dark:bg-white/[0.02] flex items-center justify-center text-xs text-muted-foreground/70">
+                          证书图片
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
-              )}
-
-              {honor.images.length > 0 && (
-                <div className="mt-4 flex gap-2 overflow-x-auto">
-                  {honor.images.map((src) => (
-                    <button
-                      key={src}
-                      onClick={() => setLightbox({ src, alt: honor.title })}
-                      className="relative h-32 w-48 shrink-0 overflow-hidden rounded-lg border border-black/8 dark:border-white/10 cursor-zoom-in transition-transform duration-300 hover:scale-105"
-                    >
-                      <Image src={src} alt={honor.title} fill className="object-cover" sizes="192px" />
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              {honor.images.length === 0 && honor.status !== "进行中" && (
-                <div className="mt-4 flex gap-2">
-                  <div className="h-20 w-28 rounded-lg border border-dashed border-black/8 dark:border-white/10 bg-black/[0.02] dark:bg-white/[0.02] flex items-center justify-center text-xs text-muted-foreground/70">
-                    证书图片
-                  </div>
-                </div>
-              )}
-            </div>
-          </motion.div>
-        ))}
+              </motion.div>
+            );
+          })}
+        </div>
       </div>
 
       {/* Honor Wall */}
