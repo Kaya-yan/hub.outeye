@@ -1,117 +1,223 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
-const skillGroups = [
+interface Skill {
+  name: string;
+  level: string;
+  abbr: string;
+  related?: string[];
+  note?: string;
+}
+
+interface SkillGroup {
+  category: string;
+  color: string;
+  skills: Skill[];
+}
+
+const skillGroups: SkillGroup[] = [
   {
-    category: "前端开发",
+    category: "前端",
+    color: "#3B82F6",
     skills: [
-      { name: "Next.js", level: "精通", icon: "▲" },
-      { name: "React", level: "精通", icon: "⚛" },
-      { name: "TypeScript", level: "熟练", icon: "TS" },
-      { name: "Tailwind", level: "精通", icon: "🎨" },
-      { name: "shadcn/ui", level: "熟练", icon: "◆" },
+      { name: "Next.js", level: "精通", abbr: "Nx", related: ["React", "Vercel"], note: "OutEye 全系列基座" },
+      { name: "React", level: "精通", abbr: "Rc", related: ["Next.js", "TypeScript"] },
+      { name: "TypeScript", level: "熟练", abbr: "TS", related: ["React", "Next.js"] },
+      { name: "Tailwind", level: "精通", abbr: "Tw", related: ["shadcn/ui"] },
+      { name: "shadcn/ui", level: "熟练", abbr: "sc", related: ["Tailwind", "React"] },
     ],
   },
   {
-    category: "后端与数据库",
+    category: "后端",
+    color: "#10B981",
     skills: [
-      { name: "Supabase", level: "熟练", icon: "⚡" },
-      { name: "PostgreSQL", level: "了解", icon: "🐘" },
-      { name: "Neon", level: "熟练", icon: "☁" },
-      { name: "Vercel", level: "精通", icon: "△" },
-      { name: "GitHub", level: "精通", icon: "⌨" },
+      { name: "Supabase", level: "熟练", abbr: "Sb", related: ["PostgreSQL"], note: "OutEye 2.0 数据层" },
+      { name: "PostgreSQL", level: "了解", abbr: "Pg", related: ["Supabase", "Neon"] },
+      { name: "Neon", level: "熟练", abbr: "Ne", related: ["PostgreSQL"], note: "ZhaoyanHub 数据库" },
+      { name: "Vercel", level: "精通", abbr: "Vc", related: ["Next.js"] },
+      { name: "GitHub", level: "精通", abbr: "Gh" },
     ],
   },
   {
-    category: "AI 工具",
+    category: "AI",
+    color: "#8B5CF6",
     skills: [
-      { name: "DeepSeek", level: "精通", icon: "DS" },
-      { name: "Kimi", level: "精通", icon: "K" },
-      { name: "Claude", level: "精通", icon: "C" },
-      { name: "MiMo", level: "精通", icon: "M" },
-      { name: "ChatGPT", level: "精通", icon: "G" },
-      { name: "Gemini", level: "熟练", icon: "Ge" },
+      { name: "DeepSeek", level: "精通", abbr: "DS", note: "OutEye 2.0 编码引擎" },
+      { name: "Kimi", level: "精通", abbr: "Ki" },
+      { name: "Claude", level: "精通", abbr: "Cl" },
+      { name: "MiMo", level: "精通", abbr: "Mi", note: "月消耗 800 亿 Token" },
+      { name: "ChatGPT", level: "精通", abbr: "Gt" },
+      { name: "Gemini", level: "熟练", abbr: "Ge" },
     ],
   },
   {
-    category: "AI 平台与工作流",
+    category: "平台",
+    color: "#F59E0B",
     skills: [
-      { name: "Hermes", level: "熟练", icon: "H" },
-      { name: "Trae", level: "熟练", icon: "Tr" },
-      { name: "Coze", level: "熟练", icon: "Cz" },
-      { name: "Observable", level: "熟练", icon: "◉" },
+      { name: "Hermes", level: "熟练", abbr: "Hr" },
+      { name: "Trae", level: "熟练", abbr: "Tr" },
+      { name: "Coze", level: "熟练", abbr: "Cz" },
+      { name: "Observable", level: "熟练", abbr: "Ob" },
     ],
   },
   {
     category: "语言",
+    color: "#EF4444",
     skills: [
-      { name: "英语", level: "专业级", icon: "EN", sub: "CEFR C1" },
-      { name: "土耳其语", level: "进阶", icon: "TR" },
-      { name: "中文", level: "母语", icon: "中" },
+      { name: "中文", level: "母语", abbr: "中" },
+      { name: "英语", level: "CEFR C1", abbr: "EN", note: "专业级阅读与写作" },
+      { name: "土耳其语", level: "进阶", abbr: "TR" },
     ],
   },
 ];
 
-const levelColor: Record<string, string> = {
-  "精通": "bg-gradient-to-r from-brand-cyan to-brand-violet",
-  "熟练": "bg-zinc-400 dark:bg-white/40",
-  "了解": "bg-zinc-300 dark:bg-white/20",
-  "专业级": "bg-gradient-to-r from-brand-cyan to-brand-violet",
-  "进阶": "bg-zinc-400 dark:bg-white/40",
-  "母语": "bg-gradient-to-r from-brand-cyan to-brand-violet",
+const levelBar: Record<string, number> = {
+  "精通": 100,
+  "熟练": 72,
+  "了解": 40,
+  "母语": 100,
+  "CEFR C1": 88,
+  "进阶": 55,
 };
 
-function getLevelWidth(level: string): string {
-  if (level === "精通" || level === "专业级" || level === "母语") return "100%";
-  if (level === "熟练" || level === "进阶") return "70%";
-  return "40%";
-}
-
 export default function SkillsPage() {
+  const [active, setActive] = useState<string | null>(null);
+
   return (
     <div className="mx-auto max-w-5xl px-6 py-20">
-      <h1 className="text-4xl font-bold tracking-tight">技能与工具</h1>
-      <p className="mt-2 text-muted-foreground">技术栈与能力图谱</p>
+      <h1 className="text-4xl font-bold tracking-tight text-balance">技能与工具</h1>
+      <p className="mt-2 text-muted-foreground">技术栈与能力矩阵</p>
 
-      <div className="mt-12 space-y-12">
-        {skillGroups.map((group, gi) => (
-          <motion.div
-            key={group.category}
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.4, delay: gi * 0.1 }}
-          >
-            <h2 className="mb-4 text-sm font-medium text-muted-foreground">
-              {group.category}
-            </h2>
-            <div className="flex flex-wrap gap-3">
-              {group.skills.map((skill) => (
-                <div
-                  key={skill.name}
-                  className="group relative flex w-[88px] flex-col items-center gap-2 rounded-xl surface-card p-3 transition-all duration-300 hover:-translate-y-1 hover:border-brand-cyan/20 hover:shadow-[0_0_20px_rgba(6,182,212,0.08)]"
-                >
-                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-black/5 dark:bg-white/5 text-sm font-bold text-muted-foreground transition-colors group-hover:text-foreground">
-                    {skill.icon}
-                  </div>
-                  <span className="text-[11px] font-medium text-foreground leading-tight text-center">
-                    {skill.name}
-                  </span>
-                  <div className="h-0.5 w-full overflow-hidden rounded-full bg-zinc-200 dark:bg-white/10">
-                    <div
-                      className={`h-full rounded-full ${levelColor[skill.level] || "bg-white/30"}`}
-                      style={{ width: getLevelWidth(skill.level) }}
-                    />
-                  </div>
-                  <span className="text-[10px] text-muted-foreground">
-                    {skill.sub || skill.level}
-                  </span>
-                </div>
-              ))}
+      <div className="mt-14 space-y-14">
+        {skillGroups.map((group) => (
+          <section key={group.category}>
+            {/* Category header */}
+            <div className="mb-4 flex items-center gap-2.5">
+              <span
+                className="h-2 w-2 rounded-full"
+                style={{ background: group.color }}
+              />
+              <h2 className="text-sm font-medium text-foreground">
+                {group.category}
+              </h2>
+              <span className="text-xs text-muted-foreground">
+                {group.skills.length} 项
+              </span>
             </div>
-          </motion.div>
+
+            {/* Skills grid */}
+            <div className="flex flex-wrap gap-2">
+              {group.skills.map((skill) => {
+                const isActive = active === `${group.category}-${skill.name}`;
+                return (
+                  <motion.button
+                    key={skill.name}
+                    layout
+                    onClick={() =>
+                      setActive(isActive ? null : `${group.category}-${skill.name}`)
+                    }
+                    className={`
+                      relative flex items-center gap-2 rounded-lg border px-3 py-2
+                      text-left text-sm transition-colors duration-150
+                      ${isActive
+                        ? "border-foreground/20 bg-foreground/[0.04]"
+                        : "border-black/6 dark:border-white/8 hover:border-foreground/15 hover:bg-foreground/[0.02]"
+                      }
+                    `}
+                  >
+                    {/* Abbreviation badge */}
+                    <span
+                      className="flex h-7 w-7 shrink-0 items-center justify-center rounded text-[10px] font-bold"
+                      style={{
+                        background: `${group.color}15`,
+                        color: group.color,
+                      }}
+                    >
+                      {skill.abbr}
+                    </span>
+
+                    <div className="flex flex-col">
+                      <span className="text-[13px] font-medium leading-tight">
+                        {skill.name}
+                      </span>
+                      <span className="text-[10px] text-muted-foreground">
+                        {skill.level}
+                      </span>
+                    </div>
+
+                    {/* Level indicator bar */}
+                    <div className="ml-auto h-1 w-8 overflow-hidden rounded-full bg-black/6 dark:bg-white/8">
+                      <div
+                        className="h-full rounded-full transition-all duration-300"
+                        style={{
+                          width: `${levelBar[skill.level] || 50}%`,
+                          background: group.color,
+                        }}
+                      />
+                    </div>
+                  </motion.button>
+                );
+              })}
+            </div>
+
+            {/* Detail panel */}
+            <AnimatePresence>
+              {group.skills.map((skill) => {
+                const key = `${group.category}-${skill.name}`;
+                if (active !== key) return null;
+                return (
+                  <motion.div
+                    key={key}
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.2, ease: "easeOut" }}
+                    className="overflow-hidden"
+                  >
+                    <div className="mt-3 rounded-lg border border-black/6 dark:border-white/8 bg-foreground/[0.02] p-4">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <p className="text-sm font-medium">{skill.name}</p>
+                          <p className="mt-0.5 text-xs text-muted-foreground">
+                            掌握程度：{skill.level}
+                          </p>
+                          {skill.note && (
+                            <p className="mt-1.5 text-xs text-muted-foreground">
+                              {skill.note}
+                            </p>
+                          )}
+                        </div>
+                        {skill.related && skill.related.length > 0 && (
+                          <div className="flex flex-wrap gap-1.5">
+                            {skill.related.map((r) => (
+                              <span
+                                key={r}
+                                className="rounded bg-black/5 dark:bg-white/5 px-1.5 py-0.5 text-[10px] text-muted-foreground"
+                              >
+                                {r}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
+          </section>
         ))}
+      </div>
+
+      {/* Summary */}
+      <div className="mt-16 flex flex-wrap gap-4 text-xs text-muted-foreground">
+        <span>5 个类别</span>
+        <span className="text-muted-foreground/40">·</span>
+        <span>{skillGroups.reduce((a, g) => a + g.skills.length, 0)} 项技能</span>
+        <span className="text-muted-foreground/40">·</span>
+        <span>点击展开详情</span>
       </div>
     </div>
   );
