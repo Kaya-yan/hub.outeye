@@ -62,7 +62,7 @@ export function Navbar() {
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 lg:px-6">
         <Link href="/" className={cn(
           "text-lg font-bold tracking-tight transition-colors",
-          isHome && !isScrolled ? "text-white" : ""
+          isHome && !isScrolled ? "invisible" : ""
         )}>
           <span className="text-brand-cyan">ZhaoyanHub</span>
         </Link>
