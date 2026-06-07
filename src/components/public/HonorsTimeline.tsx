@@ -11,12 +11,15 @@ interface Props {
 export function HonorsTimeline({ coreHonors }: Props) {
   return (
     <>
-      {/* Desktop: Horizontal timeline */}
-      <div className="hidden lg:block relative mt-16">
-        {/* Horizontal line */}
-        <div className="absolute top-[36px] left-0 right-0 h-px bg-white/[0.08]" />
+      {/* Desktop & Tablet: Horizontal grid timeline */}
+      <div className="hidden md:block relative mt-16">
+        {/* Horizontal line across all columns */}
+        <div
+          className="absolute left-0 right-0 h-px bg-white/[0.08]"
+          style={{ top: "28px" }}
+        />
 
-        <div className="grid grid-cols-3 gap-8">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
           {coreHonors.map((honor, i) => {
             const colors = getLevelColor(honor.level);
             return (
@@ -26,24 +29,41 @@ export function HonorsTimeline({ coreHonors }: Props) {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.4, delay: i * 0.08 }}
-                className="flex flex-col items-center text-center"
+                className="flex flex-col items-center"
               >
-                {/* Year label above line */}
-                <span className="text-xs font-mono text-cyan-400 mb-3">{honor.year}</span>
-
-                {/* Node on line */}
-                <div className={`relative z-10 w-3 h-3 rounded-full ${colors.dot} ${colors.glow} mb-5`} />
+                {/* Year + Node column */}
+                <div className="flex flex-col items-center relative">
+                  <span className="text-[11px] font-mono text-cyan-400 mb-1.5">{honor.year}</span>
+                  <div className={`relative z-10 w-2.5 h-2.5 rounded-full ${colors.dot} ${colors.glow}`} />
+                  {/* Dashed connector */}
+                  <div className="w-px h-6 border-l border-dashed border-white/10" />
+                </div>
 
                 {/* Card */}
-                <div className={`w-full rounded-xl border ${colors.border} bg-card/40 backdrop-blur-sm p-5 text-left transition-all duration-300 ${colors.hoverBorder} hover:-translate-y-0.5 ${colors.hoverShadow}`}>
-                  <span className={`text-[11px] ${colors.text} font-medium`}>{honor.level}</span>
-                  <h3 className="mt-2 font-semibold text-sm">{honor.title}</h3>
-                  {honor.subtitle && (
-                    <p className="mt-1 text-xs text-slate-400">{honor.subtitle}</p>
+                <div className={`w-full flex flex-col rounded-xl border ${colors.border} bg-card/40 backdrop-blur-sm p-5 min-h-[200px] transition-all duration-300 ${colors.hoverBorder} hover:-translate-y-0.5 ${colors.hoverShadow}`}>
+                  {/* Level badge */}
+                  <div className="shrink-0">
+                    <span className={`text-[11px] ${colors.text} font-medium`}>{honor.level}</span>
+                  </div>
+
+                  {/* Title */}
+                  <h3 className="mt-2 font-semibold text-sm leading-snug line-clamp-2">
+                    {honor.title}
+                  </h3>
+
+                  {/* Subtitle */}
+                  {honor.subtitle ? (
+                    <p className="mt-1 text-xs text-slate-400 leading-snug line-clamp-1">{honor.subtitle}</p>
+                  ) : (
+                    <div className="mt-1 h-4" />
                   )}
 
+                  {/* Spacer pushes progress to bottom */}
+                  <div className="flex-1" />
+
+                  {/* Progress bar */}
                   {honor.status === "进行中" && honor.materials.length > 0 && (
-                    <div className="mt-3">
+                    <div className="shrink-0 mt-3">
                       <div className="h-1.5 w-full rounded-full bg-white/10 overflow-hidden">
                         <div
                           className="h-full rounded-full bg-brand-cyan"
@@ -74,7 +94,7 @@ export function HonorsTimeline({ coreHonors }: Props) {
       </div>
 
       {/* Mobile: Vertical timeline */}
-      <div className="lg:hidden mt-12 space-y-8">
+      <div className="md:hidden mt-12 space-y-8">
         {coreHonors.map((honor, i) => {
           const colors = getLevelColor(honor.level);
           return (
@@ -103,9 +123,9 @@ export function HonorsTimeline({ coreHonors }: Props) {
                   )}
                 </div>
 
-                <h3 className="mt-2 font-semibold">{honor.title}</h3>
+                <h3 className="mt-2 font-semibold line-clamp-2">{honor.title}</h3>
                 {honor.subtitle && (
-                  <p className="mt-1 text-xs text-slate-400">{honor.subtitle}</p>
+                  <p className="mt-1 text-xs text-slate-400 line-clamp-1">{honor.subtitle}</p>
                 )}
 
                 {honor.status === "进行中" && honor.materials.length > 0 && (
