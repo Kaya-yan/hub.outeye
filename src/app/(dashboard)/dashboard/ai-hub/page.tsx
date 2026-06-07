@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useAIHubStore } from "@/stores/ai-hub";
 import { ThreadList } from "@/components/ai-hub/ThreadList";
 import { PaneView } from "@/components/ai-hub/PaneView";
@@ -23,6 +23,7 @@ export default function AiHubPage() {
   const [showModelPicker, setShowModelPicker] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [relaySource, setRelaySource] = useState<{ content: string; fromPaneId: string } | null>(null);
+  const relayAbortRef = useRef<AbortController | null>(null);
 
   // Load initial data
   useEffect(() => {
@@ -100,6 +101,13 @@ export default function AiHubPage() {
   async function handleRelayConfirm(toPaneId: string) {
     if (!relaySource) return;
 
+    // Cancel any previous in-flight relay
+    if (relayAbortRef.current) {
+      relayAbortRef.current.abort();
+    }
+    const abortController = new AbortController();
+    relayAbortRef.current = abortController;
+
     const relayContent = `请审核/补充以下内容：\n\n${relaySource.content}`;
 
     // Add user message to target pane's UI
@@ -131,6 +139,7 @@ export default function AiHubPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ paneId: toPaneId, message: relayContent }),
+        signal: abortController.signal,
       });
 
       if (!res.ok) throw new Error(await res.text());
@@ -153,14 +162,23 @@ export default function AiHubPage() {
           if (data === "[DONE]") continue;
           try {
             const json = JSON.parse(data);
+            if (json.error) {
+              appendToLastMessage(toPaneId, `\n\n[错误: ${json.error}]`);
+              break;
+            }
             if (json.content) appendToLastMessage(toPaneId, json.content);
           } catch { /* skip */ }
         }
       }
     } catch (error) {
-      appendToLastMessage(toPaneId, `\n\n[转发错误: ${error instanceof Error ? error.message : "未知错误"}]`);
+      if (abortController.signal.aborted) {
+        appendToLastMessage(toPaneId, "\n\n[已取消]");
+      } else {
+        appendToLastMessage(toPaneId, `\n\n[转发错误: ${error instanceof Error ? error.message : "未知错误"}]`);
+      }
     } finally {
       setStreaming(toPaneId, false);
+      relayAbortRef.current = null;
     }
 
     setRelaySource(null);

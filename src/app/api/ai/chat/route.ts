@@ -50,30 +50,62 @@ export async function POST(req: NextRequest) {
     let fullContent = "";
     const reader = stream.getReader();
     const encoder = new TextEncoder();
+    let saved = false;
 
     const transformedStream = new ReadableStream({
       async pull(controller) {
-        const { done, value } = await reader.read();
-        if (done) {
-          controller.enqueue(encoder.encode("data: [DONE]\n\n"));
-          const latency = Date.now() - startTime;
-          await db.insert(aiMessages).values({
-            paneId,
-            role: "assistant",
-            content: fullContent,
-            latencyMs: latency,
-          });
+        try {
+          const { done, value } = await reader.read();
+
+          if (done) {
+            if (!saved) {
+              saved = true;
+              const latency = Date.now() - startTime;
+              await db.insert(aiMessages).values({
+                paneId,
+                role: "assistant",
+                content: fullContent,
+                latencyMs: latency,
+              });
+            }
+            controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+            controller.close();
+            return;
+          }
+
+          if (value.done) {
+            if (!saved) {
+              saved = true;
+              const latency = Date.now() - startTime;
+              await db.insert(aiMessages).values({
+                paneId,
+                role: "assistant",
+                content: fullContent,
+                latencyMs: latency,
+              });
+            }
+            controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+            controller.close();
+            return;
+          }
+
+          fullContent += value.content;
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ content: value.content })}\n\n`));
+        } catch (err) {
+          const errMsg = err instanceof Error ? err.message : "Stream error";
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ error: errMsg })}\n\n`));
+          if (!saved) {
+            saved = true;
+            const latency = Date.now() - startTime;
+            await db.insert(aiMessages).values({
+              paneId,
+              role: "assistant",
+              content: fullContent || `[Error: ${errMsg}]`,
+              latencyMs: latency,
+            });
+          }
           controller.close();
-          return;
         }
-
-        if (value.done) {
-          controller.enqueue(encoder.encode("data: [DONE]\n\n"));
-          return;
-        }
-
-        fullContent += value.content;
-        controller.enqueue(encoder.encode(`data: ${JSON.stringify({ content: value.content })}\n\n`));
       },
     });
 

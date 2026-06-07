@@ -29,6 +29,7 @@ export function PaneView({ paneId, paneName, modelId, onRelay, onDelete }: PaneV
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const waitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const timeoutTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
@@ -44,10 +45,27 @@ export function PaneView({ paneId, paneName, modelId, onRelay, onDelete }: PaneV
     };
   }, [paneMessages]);
 
+  // Abort in-flight request on unmount
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+        abortControllerRef.current = null;
+      }
+    };
+  }, []);
+
   async function sendMessage() {
     if (!input.trim() || streaming) return;
     const userContent = input;
     setInput("");
+
+    // Cancel any previous in-flight request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    const abortController = new AbortController();
+    abortControllerRef.current = abortController;
 
     // Add user message to UI immediately
     const userMsg = {
@@ -87,6 +105,7 @@ export function PaneView({ paneId, paneName, modelId, onRelay, onDelete }: PaneV
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ paneId, message: userContent }),
+        signal: abortController.signal,
       });
 
       if (!res.ok) {
@@ -112,6 +131,10 @@ export function PaneView({ paneId, paneName, modelId, onRelay, onDelete }: PaneV
           if (data === "[DONE]") continue;
           try {
             const json = JSON.parse(data);
+            if (json.error) {
+              appendToLastMessage(paneId, `\n\n[错误: ${json.error}]`);
+              break;
+            }
             if (json.content) {
               if (!firstChunkReceived) {
                 firstChunkReceived = true;
@@ -125,16 +148,26 @@ export function PaneView({ paneId, paneName, modelId, onRelay, onDelete }: PaneV
         }
       }
     } catch (error) {
-      appendToLastMessage(paneId, `\n\n[错误: ${error instanceof Error ? error.message : "未知错误"}]`);
+      if (abortController.signal.aborted) {
+        appendToLastMessage(paneId, "\n\n[已取消]");
+      } else {
+        appendToLastMessage(paneId, `\n\n[错误: ${error instanceof Error ? error.message : "未知错误"}]`);
+      }
     } finally {
       if (waitTimerRef.current) clearTimeout(waitTimerRef.current);
       if (timeoutTimerRef.current) clearTimeout(timeoutTimerRef.current);
       setStreaming(paneId, false);
       setWaitState("idle");
+      abortControllerRef.current = null;
     }
   }
 
   async function clearContext() {
+    // Abort in-flight request before clearing
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
     await fetch("/api/ai/messages", {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
