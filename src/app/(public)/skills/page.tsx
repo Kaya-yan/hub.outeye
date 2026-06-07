@@ -60,6 +60,7 @@ const skillGroups: SkillGroup[] = [
       { name: "Trae", level: "熟练", abbr: "Tr" },
       { name: "Coze", level: "熟练", abbr: "Cz" },
       { name: "Observable", level: "熟练", abbr: "Ob" },
+      { name: "Claude Code", level: "精通", abbr: "CC" },
     ],
   },
   {

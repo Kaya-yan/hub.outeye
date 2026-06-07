@@ -16,7 +16,7 @@ const items = [
     subtitle: "月消耗 Token 规模",
     bgImage: null,
     span: "",
-    bgType: "pulse" as const,
+    bgType: "meteor" as const,
   },
   {
     title: "挑战杯",
@@ -30,7 +30,7 @@ const items = [
     subtitle: "Next.js · React · TypeScript · Tailwind",
     bgImage: null,
     span: "col-span-2",
-    bgType: "code" as const,
+    bgType: "terminal" as const,
   },
 ];
 
@@ -45,10 +45,10 @@ const itemVariant = {
 };
 
 /* ================================================================
-   PulseCanvas v3 — 三层粒子系统 + 中心引擎脉冲 + 数据流引力
+   MeteorCanvas — 双层流星：流星雨 + 偶发流星
    ================================================================ */
 
-function PulseCanvas() {
+function MeteorCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -62,60 +62,122 @@ function PulseCanvas() {
     let cw = 0;
     let ch = 0;
 
-    // ── Layer 1: Background drift (starfield) ──
-    const bgParticles = Array.from({ length: 45 }, () => ({
-      x: Math.random() * 600,
-      y: Math.random() * 200,
-      vx: (Math.random() - 0.5) * 0.15,
-      vy: (Math.random() - 0.5) * 0.1,
-      r: 0.5 + Math.random() * 0.5,
-    }));
+    // Static stars
+    interface Star { x: number; y: number }
+    let stars: Star[] = [];
 
-    // ── Layer 2: Data flow (converge to center) ──
-    const TRAIL_LEN = 8;
-    interface FlowParticle {
-      x: number; y: number;
-      vx: number; vy: number;
-      r: number; opacity: number;
+    // Generic meteor type
+    interface Meteor {
+      active: boolean;
+      startX: number;
+      startY: number;
+      progress: number;
+      speed: number;
+      curveDir: number;
+      curveAmt: number;
       trail: { x: number; y: number }[];
+      headR: number;
+      headAlpha: number;
+      trailAlpha: number;
+      trailWidthPct: number; // trail length as % of card width
+      shadowBlur: number;
     }
-    const flowParticles: FlowParticle[] = Array.from({ length: 25 }, () => ({
-      x: 0, y: 0,
-      vx: 0.6 + Math.random() * 0.5,
-      vy: 0,
-      r: 1.5 + Math.random() * 1,
-      opacity: 0.45 + Math.random() * 0.2,
-      trail: [],
-    }));
 
-    // ── Layer 3: Core orbital ──
-    interface OrbitalParticle {
-      angle: number;
-      rx: number; ry: number;
-      r: number; speed: number;
-      phase: number;
+    function makeMeteor(): Meteor {
+      return {
+        active: false, startX: 0, startY: 0, progress: 0,
+        speed: 0, curveDir: 1, curveAmt: 0, trail: [],
+        headR: 1, headAlpha: 0.5, trailAlpha: 0.4,
+        trailWidthPct: 0.15, shadowBlur: 0,
+      };
     }
-    const coreParticles: OrbitalParticle[] = Array.from({ length: 6 }, () => ({
-      angle: Math.random() * Math.PI * 2,
-      rx: 25 + Math.random() * 30,
-      ry: 15 + Math.random() * 20,
-      r: 2 + Math.random() * 1.5,
-      speed: 0.003 + Math.random() * 0.004,
-      phase: Math.random() * Math.PI * 2,
-    }));
 
-    // ── Engine pulse state ──
-    let arcAngle = 0;
-    let pulseIntensity = 0.08;
-    let pulseTarget = 0.08;
-    let pulseDecay = 0;
+    // Layer 1: meteor shower (frequent, subtle)
+    const shower: Meteor = makeMeteor();
+    let nextShowerTime = 0;
 
-    function resetFlowParticle(p: FlowParticle) {
-      p.x = -5 - Math.random() * 20;
-      p.y = ch * 0.15 + Math.random() * ch * 0.7;
-      p.vx = 0.6 + Math.random() * 0.5;
-      p.vy = 0;
-      p.trail = [];
+    // Layer 2: featured meteor (rare, bright)
+    const featured: Meteor = makeMeteor();
+    let nextFeaturedTime = 0;
+
+    function spawnShower() {
+      shower.active = true;
+      shower.startX = -5;
+      shower.startY = ch * 0.15 + Math.random() * ch * 0.7;
+      shower.progress = 0;
+      shower.speed = 0.008 + Math.random() * 0.004;
+      shower.curveDir = Math.random() > 0.5 ? 1 : -1;
+      shower.curveAmt = 5 + Math.random() * 8;
+      shower.trail = [];
+      shower.headR = 1.5;
+      shower.headAlpha = 1;
+      shower.trailAlpha = 0.7;
+      shower.trailWidthPct = 0.2;
+      shower.shadowBlur = 6;
+    }
+
+    function spawnFeatured() {
+      featured.active = true;
+      featured.startX = -10;
+      featured.startY = ch * 0.2 + Math.random() * ch * 0.6;
+      featured.progress = 0;
+      featured.speed = 0.006 + Math.random() * 0.003;
+      featured.curveDir = Math.random() > 0.5 ? 1 : -1;
+      featured.curveAmt = 10 + Math.random() * 10;
+      featured.trail = [];
+      featured.headR = 1.5;
+      featured.headAlpha = 0.9;
+      featured.trailAlpha = 0.8;
+      featured.trailWidthPct = 0.4;
+      featured.shadowBlur = 8;
+    }
+
+    function getPos(m: Meteor) {
+      const x = m.startX + m.progress * (cw + 30);
+      const curve = m.curveAmt * 4 * m.progress * (1 - m.progress) * m.curveDir;
+      return { x, y: m.startY + curve };
+    }
+
+    function drawMeteor(m: Meteor) {
+      if (!m.active) return;
+      m.progress += m.speed;
+
+      const pos = getPos(m);
+      m.trail.push(pos);
+      const maxTrail = Math.floor(cw * m.trailWidthPct / 2);
+      if (m.trail.length > maxTrail) m.trail.shift();
+
+      // Trail
+      if (m.trail.length > 1) {
+        for (let i = 0; i < m.trail.length - 1; i++) {
+          const a = (i / m.trail.length) * m.trailAlpha;
+          ctx!.strokeStyle = `rgba(220,245,255,${a})`;
+          ctx!.lineWidth = Math.max(0.8, m.headR * 0.8);
+          ctx!.beginPath();
+          ctx!.moveTo(m.trail[i].x, m.trail[i].y);
+          ctx!.lineTo(m.trail[i + 1].x, m.trail[i + 1].y);
+          ctx!.stroke();
+        }
+      }
+
+      // Head
+      ctx!.save();
+      if (m.shadowBlur > 0) {
+        ctx!.shadowBlur = m.shadowBlur;
+        ctx!.shadowColor = "rgba(220,245,255,0.6)";
+      }
+      ctx!.fillStyle = `rgba(220,245,255,${m.headAlpha})`;
+      ctx!.beginPath();
+      ctx!.arc(pos.x, pos.y, m.headR, 0, Math.PI * 2);
+      ctx!.fill();
+      ctx!.shadowBlur = 0;
+      ctx!.restore();
+
+      // Done?
+      if (m.progress >= 1) {
+        m.active = false;
+        m.trail = [];
+      }
     }
 
     function resize() {
@@ -128,150 +190,58 @@ function PulseCanvas() {
       ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
       canvas!.style.width = cw + "px";
       canvas!.style.height = ch + "px";
-      for (const p of bgParticles) {
-        p.x = Math.random() * cw;
-        p.y = Math.random() * ch;
-      }
-      for (const p of flowParticles) resetFlowParticle(p);
+      stars = Array.from({ length: 6 + Math.floor(Math.random() * 3) }, () => ({
+        x: Math.random() * cw,
+        y: Math.random() * ch,
+      }));
     }
 
     function draw() {
       ctx!.clearRect(0, 0, cw, ch);
-      const cx = cw / 2;
-      const cy = ch / 2;
 
-      // ── Layer 1: Background starfield ──
-      for (const p of bgParticles) {
-        ctx!.fillStyle = "rgba(30,64,175,0.15)";
+      // Background
+      ctx!.fillStyle = "#050508";
+      ctx!.fillRect(0, 0, cw, ch);
+      const bgGrad = ctx!.createRadialGradient(cw / 2, ch / 2, 0, cw / 2, ch / 2, cw * 0.6);
+      bgGrad.addColorStop(0, "rgba(15,20,40,0.3)");
+      bgGrad.addColorStop(1, "transparent");
+      ctx!.fillStyle = bgGrad;
+      ctx!.fillRect(0, 0, cw, ch);
+
+      // Stars
+      for (const s of stars) {
+        ctx!.fillStyle = "rgba(200,220,255,0.35)";
         ctx!.beginPath();
-        ctx!.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx!.fill();
-        p.x += p.vx;
-        p.y += p.vy;
-        if (p.x < 0) p.x = cw;
-        if (p.x > cw) p.x = 0;
-        if (p.y < 0) p.y = ch;
-        if (p.y > ch) p.y = 0;
-      }
-
-      // ── Central engine arcs ──
-      arcAngle += (Math.PI * 2) / (30 * 60); // 30s per revolution
-      // Pulse decay
-      if (pulseDecay > 0) {
-        pulseIntensity = 0.08 + 0.07 * pulseDecay;
-        pulseDecay -= 0.02;
-        if (pulseDecay < 0) pulseDecay = 0;
-      } else {
-        pulseIntensity = 0.08;
-      }
-
-      ctx!.save();
-      ctx!.translate(cx, cy);
-      ctx!.rotate(arcAngle);
-      ctx!.strokeStyle = `rgba(6,182,212,${pulseIntensity})`;
-      ctx!.lineWidth = 1;
-      ctx!.lineCap = "round";
-      // Draw 3 arc segments
-      for (let i = 0; i < 3; i++) {
-        const start = (i * Math.PI * 2) / 3;
-        const end = start + Math.PI * 0.4;
-        const radius = 35 + i * 8;
-        ctx!.beginPath();
-        ctx!.arc(0, 0, radius, start, end);
-        ctx!.stroke();
-      }
-      ctx!.restore();
-
-      // ── Layer 2: Data flow particles ──
-      for (const p of flowParticles) {
-        // Gravity toward center
-        const dx = cx - p.x;
-        const dy = cy - p.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        const gravity = dist < 80 ? 0.015 : 0.004;
-        p.vx += (dx / dist) * gravity;
-        p.vy += (dy / dist) * gravity;
-        // Dampen
-        p.vx *= 0.995;
-        p.vy *= 0.995;
-
-        // Trail
-        p.trail.push({ x: p.x, y: p.y });
-        if (p.trail.length > TRAIL_LEN) p.trail.shift();
-
-        // Draw trail
-        for (let i = 0; i < p.trail.length - 1; i++) {
-          const t = p.trail[i];
-          const alpha = (i / p.trail.length) * p.opacity * 0.4;
-          ctx!.strokeStyle = `rgba(6,182,212,${alpha})`;
-          ctx!.lineWidth = p.r * 0.5;
-          ctx!.beginPath();
-          ctx!.moveTo(t.x, t.y);
-          ctx!.lineTo(p.trail[i + 1].x, p.trail[i + 1].y);
-          ctx!.stroke();
-        }
-
-        // Draw particle with glow
-        const glowR = p.r * 3;
-        const grad = ctx!.createRadialGradient(p.x, p.y, 0, p.x, p.y, glowR);
-        grad.addColorStop(0, `rgba(6,182,212,${p.opacity})`);
-        grad.addColorStop(0.4, `rgba(59,130,246,${p.opacity * 0.4})`);
-        grad.addColorStop(1, "transparent");
-        ctx!.fillStyle = grad;
-        ctx!.beginPath();
-        ctx!.arc(p.x, p.y, glowR, 0, Math.PI * 2);
-        ctx!.fill();
-
-        // Core
-        ctx!.fillStyle = `rgba(165,243,252,${p.opacity})`;
-        ctx!.beginPath();
-        ctx!.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx!.fill();
-
-        // Move
-        p.x += p.vx;
-        p.y += p.vy;
-
-        // If near center, trigger pulse and respawn
-        if (dist < 20) {
-          pulseDecay = 1;
-          resetFlowParticle(p);
-        }
-        // If out of bounds, respawn
-        if (p.x > cw + 20 || p.x < -30 || p.y < -20 || p.y > ch + 20) {
-          resetFlowParticle(p);
-        }
-      }
-
-      // ── Layer 3: Core orbital particles ──
-      ctx!.save();
-      ctx!.shadowBlur = 15;
-      ctx!.shadowColor = "rgba(165,243,252,0.8)";
-      for (const p of coreParticles) {
-        p.angle += p.speed;
-        const ox = cx + Math.cos(p.angle + p.phase) * p.rx;
-        const oy = cy + Math.sin(p.angle + p.phase) * p.ry;
-        const grad = ctx!.createRadialGradient(ox, oy, 0, ox, oy, p.r * 3);
-        grad.addColorStop(0, "rgba(165,243,252,0.9)");
-        grad.addColorStop(0.5, "rgba(6,182,212,0.3)");
-        grad.addColorStop(1, "transparent");
-        ctx!.fillStyle = grad;
-        ctx!.beginPath();
-        ctx!.arc(ox, oy, p.r * 3, 0, Math.PI * 2);
-        ctx!.fill();
-        // Bright core
-        ctx!.fillStyle = "rgba(165,243,252,0.9)";
-        ctx!.beginPath();
-        ctx!.arc(ox, oy, p.r, 0, Math.PI * 2);
+        ctx!.arc(s.x, s.y, 0.5, 0, Math.PI * 2);
         ctx!.fill();
       }
-      ctx!.shadowBlur = 0;
-      ctx!.restore();
+
+      const now = performance.now();
+
+      // Shower: spawn if inactive and past schedule
+      if (!shower.active && now > nextShowerTime) {
+        spawnShower();
+      }
+      drawMeteor(shower);
+      if (!shower.active && nextShowerTime <= now) {
+        nextShowerTime = now + 1500 + Math.random() * 1000; // 1.5-2.5s gap
+      }
+
+      // Featured: spawn if inactive and past schedule
+      if (!featured.active && now > nextFeaturedTime) {
+        spawnFeatured();
+      }
+      drawMeteor(featured);
+      if (!featured.active && nextFeaturedTime <= now) {
+        nextFeaturedTime = now + 8000 + Math.random() * 4000; // 8-12s gap
+      }
 
       animId = requestAnimationFrame(draw);
     }
 
     resize();
+    nextShowerTime = performance.now() + 1000;
+    nextFeaturedTime = performance.now() + 5000 + Math.random() * 3000;
     draw();
     const ro = new ResizeObserver(resize);
     ro.observe(canvas!.parentElement!);
@@ -290,167 +260,118 @@ function PulseCanvas() {
 }
 
 /* ================================================================
-   CodeRain v3 — 多列并行 + 语法高亮 + 底部状态栏
+   MinimalTerminal — 极简终端：4 行打字机
    ================================================================ */
 
-interface Token { text: string; color: string }
-
-// Pre-tokenized code snippets with syntax highlighting
-const CODE_SNIPPETS: Token[][] = [
-  [
-    { text: "import", color: "#c084fc" },
-    { text: " { Next.js } ", color: "#e2e8f0" },
-    { text: "from", color: "#c084fc" },
-    { text: " 'react'", color: "#4ade80" },
-  ],
-  [
-    { text: "const", color: "#c084fc" },
-    { text: " db = ", color: "#e2e8f0" },
-    { text: "new", color: "#c084fc" },
-    { text: " Neon({ ssl: ", color: "#e2e8f0" },
-    { text: "true", color: "#f472b6" },
-    { text: " })", color: "#e2e8f0" },
-  ],
-  [
-    { text: "export", color: "#c084fc" },
-    { text: " default ", color: "#e2e8f0" },
-    { text: "function", color: "#c084fc" },
-    { text: " OutEye() { }", color: "#60a5fa" },
-  ],
-  [
-    { text: "// OutEye 4.0: 200 comments", color: "#6b7280" },
-  ],
-  [
-    { text: "tailwind.config = { theme: { extend: {} } }", color: "#e2e8f0" },
-  ],
-  [
-    { text: "const", color: "#c084fc" },
-    { text: " api = ", color: "#e2e8f0" },
-    { text: "new", color: "#c084fc" },
-    { text: " MiMo({ tokens: ", color: "#e2e8f0" },
-    { text: "800_000_000_000", color: "#f472b6" },
-    { text: " })", color: "#e2e8f0" },
-  ],
-  [
-    { text: "const", color: "#c084fc" },
-    { text: " { data } = ", color: "#e2e8f0" },
-    { text: "useSWR", color: "#60a5fa" },
-    { text: "('/api/data')", color: "#4ade80" },
-  ],
-  [
-    { text: "await", color: "#c084fc" },
-    { text: " db.", color: "#e2e8f0" },
-    { text: "select", color: "#60a5fa" },
-    { text: "().", color: "#e2e8f0" },
-    { text: "from", color: "#60a5fa" },
-    { text: "(corpus)", color: "#e2e8f0" },
-  ],
-  [
-    { text: "const", color: "#c084fc" },
-    { text: " model = ", color: "#e2e8f0" },
-    { text: "'deepseek-v3'", color: "#4ade80" },
-  ],
-  [
-    { text: "npx playwright install chromium", color: "#60a5fa" },
-  ],
-];
-
-function tokenizeToHTML(tokens: Token[]): string {
-  return tokens
-    .map(
-      (t) =>
-        `<span style="color:${t.color};text-shadow:0 0 6px ${t.color}33">${t.text}</span>`
-    )
-    .join("");
-}
-
-function CodeRain() {
+function MinimalTerminal() {
   const containerRef = useRef<HTMLDivElement>(null);
   const linesRef = useRef<HTMLDivElement[]>([]);
-  const statsRef = useRef<HTMLSpanElement>(null);
+  const cursorRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
-    const COLS = 3;
+    const LINES = [
+      { key: "stack", value: "Next.js · React · TypeScript" },
+      { key: "infra", value: "Neon · Vercel · Supabase" },
+      { key: "ai", value: "MiMo · DeepSeek · Claude" },
+      { key: "status", value: "production-ready" },
+    ];
+
+    let lineIdx = 0;
+    let charIdx = 0;
     let timer = 0;
-    let lineCount = 0;
+    let cancelled = false;
 
-    // Dynamic stats counter
-    const statsInterval = setInterval(() => {
-      if (statsRef.current) {
-        lineCount += Math.floor(Math.random() * 3) + 1;
-        const chars = lineCount * 47 + Math.floor(Math.random() * 200);
-        statsRef.current.textContent = `Lines: ${lineCount.toLocaleString()} | Chars: ${chars.toLocaleString()}`;
+    function typeLine() {
+      if (cancelled || lineIdx >= LINES.length) {
+        // All done, show cursor
+        if (cursorRef.current) {
+          cursorRef.current.style.display = "inline";
+        }
+        return;
       }
-    }, 1200);
 
-    function spawn(colIdx: number) {
-      const container = containerRef.current;
-      if (!container) return;
+      const line = LINES[lineIdx];
+      const fullText = `▶ ${line.key}:  ${line.value}`;
+      const el = linesRef.current[lineIdx];
+      if (!el) return;
 
-      const snippet = CODE_SNIPPETS[Math.floor(Math.random() * CODE_SNIPPETS.length)];
-      const colWidth = 100 / COLS;
-      const left = colIdx * colWidth + 2;
-
-      const el = document.createElement("div");
-      el.className = "cr-line-v3";
-      el.style.left = `${left}%`;
-      el.style.width = `${colWidth - 3}%`;
-      el.innerHTML = tokenizeToHTML(snippet);
-
-      container.appendChild(el);
-      linesRef.current.push(el);
-
-      // Animate in
-      requestAnimationFrame(() => {
-        el.style.opacity = "1";
-      });
-
-      // Fade out and remove
-      setTimeout(() => {
-        el.style.opacity = "0";
-        setTimeout(() => {
-          el.remove();
-          linesRef.current = linesRef.current.filter((l) => l !== el);
-        }, 500);
-      }, 2800);
-
-      // Schedule next for this column
-      const nextDelay = 300 + Math.random() * 400;
-      window.setTimeout(() => spawn(colIdx), nextDelay);
+      if (charIdx <= fullText.length) {
+        // Build highlighted HTML up to current char
+        const typed = fullText.slice(0, charIdx);
+        el.innerHTML = highlightLine(typed, line.key);
+        charIdx++;
+        timer = window.setTimeout(typeLine, 50);
+      } else {
+        // Line done, move to next after 2s
+        lineIdx++;
+        charIdx = 0;
+        timer = window.setTimeout(typeLine, 2000);
+      }
     }
 
-    // Stagger column starts
-    for (let c = 0; c < COLS; c++) {
-      window.setTimeout(() => spawn(c), c * 200 + 300);
+    function highlightLine(text: string, key: string): string {
+      // Highlight ▶ and key name in white, value in cyan
+      const arrowMatch = text.match(/^(▶\s*)/);
+      if (!arrowMatch) return escapeHTML(text);
+      const arrow = arrowMatch[1];
+      const rest = text.slice(arrow.length);
+
+      const keyMatch = rest.match(/^(\w+:\s+)/);
+      if (!keyMatch) {
+        return `<span class="text-white">${escapeHTML(arrow)}</span><span class="text-cyan-400">${escapeHTML(rest)}</span>`;
+      }
+      const keyPart = keyMatch[1];
+      const value = rest.slice(keyPart.length);
+
+      return (
+        `<span class="text-white">${escapeHTML(arrow)}</span>` +
+        `<span class="text-white">${escapeHTML(keyPart)}</span>` +
+        `<span class="text-cyan-400">${escapeHTML(value)}</span>`
+      );
     }
+
+    function escapeHTML(s: string): string {
+      return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    // Start after a short delay
+    timer = window.setTimeout(typeLine, 800);
 
     return () => {
+      cancelled = true;
       clearTimeout(timer);
-      clearInterval(statsInterval);
-      linesRef.current.forEach((el) => el.remove());
     };
   }, []);
 
   return (
-    <div
-      ref={containerRef}
-      className="pointer-events-none absolute inset-0 overflow-hidden"
-    >
-      {/* Status bar */}
-      <div className="absolute bottom-0 left-0 right-0 z-20 flex h-5 items-center justify-between bg-black/30 px-3 backdrop-blur-[2px]">
-        <div className="flex items-center gap-1.5">
-          <div className="h-1 w-1 rounded-full bg-green-400 animate-pulse" />
-          <span className="font-mono text-[9px] text-green-400/70">online</span>
+    <div className="pointer-events-none absolute inset-0 flex items-end justify-center pb-10">
+      {/* Horizon line */}
+      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-500/15 to-transparent" />
+
+      {/* Terminal window */}
+      <div className="relative w-[88%] rounded-md border border-white/5 bg-black/30">
+        {/* Title bar */}
+        <div className="flex items-center gap-1 border-b border-white/5 px-3 py-1.5">
+          <div className="h-1.5 w-1.5 rounded-full bg-red-400/30" />
+          <div className="h-1.5 w-1.5 rounded-full bg-yellow-400/30" />
+          <div className="h-1.5 w-1.5 rounded-full bg-green-400/30" />
         </div>
-        <span
-          ref={statsRef}
-          className="font-mono text-[9px] text-slate-500"
-        >
-          Lines: 0 | Chars: 0
-        </span>
-        <span className="font-mono text-[9px] text-slate-600">
-          UTF-8 | TypeScript
-        </span>
+
+        {/* Content */}
+        <div className="p-3 font-mono text-[10px] leading-[1.8]">
+          {[0, 1, 2, 3].map((i) => (
+            <div key={i} ref={(el) => { if (el) linesRef.current[i] = el; }} className="h-[1.8em]">
+              {i === 0 ? " " : ""}
+            </div>
+          ))}
+          {/* Cursor on last line */}
+          <span
+            ref={cursorRef}
+            className="ml-0.5 hidden text-cyan-400 animate-[blink_1.2s_ease-in-out_infinite]"
+          >
+            █
+          </span>
+        </div>
       </div>
     </div>
   );
@@ -473,14 +394,11 @@ function BentoCard({ bentoItem }: { bentoItem: (typeof items)[number] }) {
           className="absolute inset-0 h-full w-full object-cover opacity-40 transition-opacity duration-300 group-hover:opacity-50"
         />
       )}
-      {bentoItem.bgType === "pulse" && <PulseCanvas />}
-      {bentoItem.bgType === "code" && <CodeRain />}
-      {bentoItem.bgType !== "image" && (
-        <div className="absolute inset-0 surface-bg" />
-      )}
+      {bentoItem.bgType === "meteor" && <MeteorCanvas />}
+      {bentoItem.bgType === "terminal" && <MinimalTerminal />}
 
+      {/* Text overlay — always on top */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-
       <div className="relative z-10 p-5">
         <h3 className="text-base font-semibold text-foreground">
           {bentoItem.title}
@@ -497,22 +415,9 @@ export function BentoGrid() {
   return (
     <>
       <style jsx global>{`
-        .cr-line-v3 {
-          position: absolute;
-          top: 6%;
-          font-family: var(--font-mono);
-          font-size: 10px;
-          line-height: 1.9;
-          white-space: nowrap;
-          opacity: 0;
-          transition: opacity 0.4s ease;
-          animation: cr3-fall 3.5s ease-out forwards;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
-        @keyframes cr3-fall {
-          0%   { top: 4%; }
-          100% { top: 78%; }
+        @keyframes blink {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.2; }
         }
       `}</style>
       <section className="mx-auto max-w-7xl px-6 pb-24 lg:px-12">
