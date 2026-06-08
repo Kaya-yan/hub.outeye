@@ -6,6 +6,8 @@ import { eq, desc } from "drizzle-orm";
 import { decrypt } from "@/lib/ai/crypto";
 import { streamChat, AIMessage, getProviderBaseUrl } from "@/lib/ai/providers";
 
+export const maxDuration = 30;
+
 const HISTORY_LIMIT = 50;
 
 export async function POST(req: NextRequest) {

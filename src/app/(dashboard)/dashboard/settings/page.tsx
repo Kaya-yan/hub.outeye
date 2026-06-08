@@ -35,6 +35,22 @@ const BASE_URL_HINTS: Record<string, string> = {
   ollama: "默认 http://localhost:11434/v1",
 };
 
+const PROVIDER_MAX_TOKENS: Record<string, number> = {
+  mimo: 1024,
+  moonshot: 2048,
+  deepseek: 4096,
+  anthropic: 4096,
+  openai: 4096,
+  google: 2048,
+  siliconflow: 4096,
+  aliyun: 2048,
+  ollama: 2048,
+};
+
+const PROVIDER_NOTES: Record<string, string> = {
+  mimo: "⚠ MiMo 响应较慢，Max Tokens 不宜超过 1024，否则 Vercel 函数可能超时",
+};
+
 const MODEL_PRESETS: Record<string, { id: string; label: string; desc: string }[]> = {
   deepseek: [
     { id: "deepseek-chat", label: "deepseek-chat", desc: "通用对话 · 默认" },
@@ -193,6 +209,7 @@ export default function SettingsPage() {
       ...f,
       provider,
       modelId: firstPreset?.id || "",
+      maxTokens: PROVIDER_MAX_TOKENS[provider] || 4096,
     }));
   }
 
@@ -325,6 +342,21 @@ export default function SettingsPage() {
                 onChange={(e) => setForm({ ...form, temperature: e.target.value })}
                 className="w-full rounded-md border border-black/8 dark:border-white/10 bg-background px-3 py-2 text-sm focus:border-brand-cyan/30 focus:outline-none"
               />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs text-muted-foreground">Max Tokens</label>
+              <input
+                type="number"
+                min="64"
+                max="8192"
+                step="256"
+                value={form.maxTokens}
+                onChange={(e) => setForm({ ...form, maxTokens: parseInt(e.target.value) || 2048 })}
+                className="w-full rounded-md border border-black/8 dark:border-white/10 bg-background px-3 py-2 text-sm focus:border-brand-cyan/30 focus:outline-none"
+              />
+              {PROVIDER_NOTES[form.provider] && (
+                <p className="mt-1 text-[11px] text-amber-400">{PROVIDER_NOTES[form.provider]}</p>
+              )}
             </div>
           </div>
           <div className="mt-4 flex gap-2">
