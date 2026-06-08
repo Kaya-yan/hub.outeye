@@ -27,14 +27,12 @@ export function GalaxyHero() {
   const dimsRef = useRef({ w: 0, h: 0 });
   const reducedMotion = useReducedMotion();
 
-  // Parallax scroll
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ["start start", "end start"],
   });
   const imageY = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
 
-  // Star particles
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas || reducedMotion) return;
@@ -62,7 +60,6 @@ export function GalaxyHero() {
         if (s.x > w) s.x = 0;
         if (s.y < 0) s.y = h;
         if (s.y > h) s.y = 0;
-
         ctx.fillStyle = s.size > 1
           ? `rgba(6,182,212,${s.alpha})`
           : `rgba(255,255,255,${s.alpha})`;
@@ -105,7 +102,7 @@ export function GalaxyHero() {
         />
       </motion.div>
 
-      {/* Layer: left-to-right brightness — reveals left silhouette */}
+      {/* Left-to-right brightness overlay */}
       <div
         className="absolute inset-0 pointer-events-none z-[1]"
         style={{
@@ -114,7 +111,7 @@ export function GalaxyHero() {
         }}
       />
 
-      {/* Layer: bottom darkening gradient */}
+      {/* Bottom darkening gradient */}
       <div
         className="absolute inset-0 pointer-events-none z-[3]"
         style={{
@@ -122,7 +119,7 @@ export function GalaxyHero() {
         }}
       />
 
-      {/* Layer: radial vignette */}
+      {/* Radial vignette */}
       <div
         className="absolute inset-0 pointer-events-none z-[3]"
         style={{
@@ -130,7 +127,7 @@ export function GalaxyHero() {
         }}
       />
 
-      {/* Layer: noise texture */}
+      {/* Noise texture */}
       <div
         className="absolute inset-0 pointer-events-none z-[4] opacity-[0.02]"
         style={{
@@ -147,52 +144,52 @@ export function GalaxyHero() {
         />
       )}
 
-      {/* Text float panel with glass effect */}
-      <div className="absolute left-6 bottom-20 md:left-10 md:bottom-24 z-10 max-w-sm">
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.15, ease: "easeOut" }}
-          className="rounded-xl border border-white/5 bg-black/40 backdrop-blur-md p-5 md:p-6"
+      {/* Text — Blur Reveal */}
+      <div className="absolute left-6 bottom-6 md:left-12 md:bottom-12 z-10 max-w-sm">
+        <motion.p
+          initial={{ opacity: 0, filter: "blur(8px)", y: 20 }}
+          animate={{ opacity: 1, filter: "blur(0px)", y: 0 }}
+          transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
+          className="text-xs sm:text-sm font-medium tracking-[0.2em] uppercase text-cyan-400 mb-3"
+          style={{ textShadow: "0 0 20px rgba(0,0,0,0.8)" }}
         >
-          {/* HUD cyan vertical line */}
-          <div className="flex items-start gap-4">
-            <div className="shrink-0 w-px h-12 bg-cyan-500/40 self-start mt-0.5" />
-
-            <div>
-              <p className="text-xs font-medium tracking-[0.2em] uppercase text-cyan-400 mb-2">
-                AI × 语言研究
-              </p>
-              <h1
-                className="text-4xl md:text-5xl font-bold tracking-tight text-white"
-                style={{
-                  textShadow: "0 0 40px rgba(6,182,212,0.5), 0 0 80px rgba(0,0,0,0.6)",
-                }}
-              >
-                赵<span className="text-brand-cyan">琰</span>
-              </h1>
-              <p
-                className="mt-2.5 text-sm text-slate-300 leading-relaxed"
-                style={{ textShadow: "0 1px 10px rgba(0,0,0,0.7)" }}
-              >
-                山东大学翻译学院本科生 · OutEye 系列维护者 · 挑战杯揭榜挂帅参赛者
-              </p>
-            </div>
-          </div>
-        </motion.div>
+          AI × 语言研究
+        </motion.p>
+        <motion.h1
+          initial={{ opacity: 0, filter: "blur(8px)", y: 20 }}
+          animate={{ opacity: 1, filter: "blur(0px)", y: 0 }}
+          transition={{ duration: 0.8, delay: 0.5, ease: "easeOut" }}
+          className="text-4xl md:text-5xl font-bold tracking-tight text-white"
+          style={{ textShadow: "0 2px 30px rgba(0,0,0,0.9)" }}
+        >
+          赵<span className="text-brand-cyan">琰</span>
+        </motion.h1>
+        <motion.p
+          initial={{ opacity: 0, filter: "blur(8px)", y: 20 }}
+          animate={{ opacity: 1, filter: "blur(0px)", y: 0 }}
+          transition={{ duration: 0.8, delay: 0.7, ease: "easeOut" }}
+          className="mt-3 text-sm text-slate-300 leading-relaxed"
+          style={{ textShadow: "0 2px 16px rgba(0,0,0,0.9)" }}
+        >
+          山东大学翻译学院本科生 · OutEye 系列维护者 · 挑战杯揭榜挂帅参赛者
+        </motion.p>
       </div>
 
-      {/* Scroll arrow */}
+      {/* Scroll arrow — continuous float */}
       <motion.button
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.6, delay: 1.0 }}
         onClick={handleArrowClick}
         className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 text-white/40 hover:text-white/70 transition-colors cursor-pointer"
-        style={{ animation: "floatArrow 2s ease-in-out infinite" }}
         aria-label="向下滚动"
       >
-        <ChevronDown className="h-7 w-7" />
+        <motion.div
+          animate={{ y: [0, 8, 0] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+        >
+          <ChevronDown className="h-7 w-7" />
+        </motion.div>
       </motion.button>
     </section>
   );

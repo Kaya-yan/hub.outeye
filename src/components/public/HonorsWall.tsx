@@ -15,14 +15,14 @@ export function HonorsWall({ allHonors }: Props) {
 
   return (
     <>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3" style={{ perspective: 1200 }}>
         {allHonors.map((honor, i) => (
           <motion.div
             key={`${honor.title}-${i}`}
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
+            initial={{ opacity: 0, scale: 0.95, y: 15 }}
+            whileInView={{ opacity: 1, scale: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.3, delay: i * 0.04 }}
+            transition={{ duration: 0.4, delay: i * 0.06, ease: "easeOut" }}
             onClick={() => honor.image && setLightbox({ src: honor.image, alt: honor.title })}
             className="group relative aspect-[4/3] overflow-hidden rounded-lg surface-card transition-all duration-300 hover:scale-105 hover:border-brand-cyan/20"
             style={honor.image ? { cursor: "zoom-in" } : undefined}

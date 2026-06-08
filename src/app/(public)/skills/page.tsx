@@ -110,12 +110,16 @@ export default function SkillsPage() {
 
             {/* Skills grid */}
             <div className="flex flex-wrap gap-2">
-              {group.skills.map((skill) => {
+              {group.skills.map((skill, skillIdx) => {
                 const isActive = active === `${group.category}-${skill.name}`;
                 return (
                   <motion.button
                     key={skill.name}
                     layout
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.4, delay: skillIdx * 0.06, ease: "easeOut" }}
                     onClick={() =>
                       setActive(isActive ? null : `${group.category}-${skill.name}`)
                     }
@@ -150,12 +154,13 @@ export default function SkillsPage() {
 
                     {/* Level indicator bar */}
                     <div className="ml-auto h-1 w-8 overflow-hidden rounded-full bg-black/6 dark:bg-white/8">
-                      <div
-                        className="h-full rounded-full transition-all duration-300"
-                        style={{
-                          width: `${levelBar[skill.level] || 50}%`,
-                          background: group.color,
-                        }}
+                      <motion.div
+                        initial={{ width: 0 }}
+                        whileInView={{ width: `${levelBar[skill.level] || 50}%` }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.8, delay: 0.2 + skillIdx * 0.1, ease: "easeOut" }}
+                        className="h-full rounded-full"
+                        style={{ background: group.color }}
                       />
                     </div>
                   </motion.button>
