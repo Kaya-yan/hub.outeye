@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ChevronLeft, ChevronRight, Check } from "lucide-react";
 
 type TimeSlot = "morning" | "afternoon" | "evening";
 type Category = "学习" | "竞赛" | "杂事";
@@ -21,6 +22,7 @@ interface OngoingTask {
   title: string;
   category: Category;
   status: string;
+  updatedAt?: string;
 }
 
 const SLOT_LABELS: Record<TimeSlot, { icon: string; label: string }> = {
@@ -58,6 +60,11 @@ export function WeekPlanner() {
   const [weekStart, setWeekStart] = useState(() => getMonday(new Date()));
   const [weeklyTasks, setWeeklyTasks] = useState<WeeklyTask[]>([]);
   const [ongoingTasks, setOngoingTasks] = useState<OngoingTask[]>([]);
+  const [collapsedDone, setCollapsedDone] = useState<Record<Category, boolean>>({
+    "学习": true,
+    "竞赛": true,
+    "杂事": true,
+  });
   const [loading, setLoading] = useState(true);
   const [fading, setFading] = useState(false);
   const [addingSlot, setAddingSlot] = useState<{ day: number; slot: TimeSlot } | null>(null);
@@ -82,7 +89,7 @@ export function WeekPlanner() {
   const fetchOngoing = useCallback(async () => {
     const res = await fetch("/api/tasks");
     const data = await res.json();
-    setOngoingTasks(Array.isArray(data) ? data.filter((t: OngoingTask) => t.status !== "done") : []);
+    setOngoingTasks(Array.isArray(data) ? data : []);
   }, []);
 
   useEffect(() => {
@@ -148,12 +155,25 @@ export function WeekPlanner() {
 
   async function toggleOngoingDone(task: OngoingTask) {
     const newStatus = task.status === "done" ? "todo" : "done";
-    await fetch("/api/tasks", {
+    const res = await fetch("/api/tasks", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id: task.id, status: newStatus }),
     });
-    if (newStatus === "done") setOngoingTasks((prev) => prev.filter((t) => t.id !== task.id));
+    const updated = await res.json();
+    setOngoingTasks((prev) =>
+      prev.map((t) => (t.id === task.id ? { ...updated, updatedAt: updated.updatedAt } : t))
+    );
+  }
+
+  function sortTasks(catTasks: OngoingTask[]): OngoingTask[] {
+    const undone = catTasks.filter((t) => t.status !== "done");
+    const done = catTasks
+      .filter((t) => t.status === "done")
+      .sort((a, b) =>
+        new Date(b.updatedAt || 0).getTime() - new Date(a.updatedAt || 0).getTime()
+      );
+    return [...undone, ...done];
   }
 
   async function scheduleOngoing(ongoingId: string, day: number, slot: TimeSlot) {
@@ -325,7 +345,11 @@ export function WeekPlanner() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {(["学习", "竞赛", "杂事"] as Category[]).map((cat) => {
             const cs = CATEGORY_STYLES[cat];
-            const catTasks = ongoingTasks.filter((t) => t.category === cat);
+            const allTasks = ongoingTasks.filter((t) => t.category === cat);
+            const sortedTasks = sortTasks(allTasks);
+            const undoneTasks = allTasks.filter((t) => t.status !== "done");
+            const doneTasks = allTasks.filter((t) => t.status === "done");
+            const allDone = allTasks.length > 0 && undoneTasks.length === 0;
             const icons: Record<Category, string> = { "学习": "📚", "竞赛": "🏆", "杂事": "🔧" };
 
             return (
@@ -337,7 +361,7 @@ export function WeekPlanner() {
 
                 {/* 任务列表 */}
                 <div className="p-2 space-y-0.5 min-h-[80px]">
-                  {catTasks.length === 0 ? (
+                  {sortedTasks.length === 0 ? (
                     <>
                       {/* 骨架占位线 */}
                       <div className="space-y-2 py-2 px-2">
@@ -371,26 +395,75 @@ export function WeekPlanner() {
                     </>
                   ) : (
                     <>
-                      {catTasks.map((task) => (
-                        <div key={task.id} className="group flex items-center gap-2 rounded px-2 py-1.5 hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
-                          <span className={`h-1.5 w-1.5 rounded-full ${cs.dot} shrink-0`} />
-                          <span className="text-sm text-muted-foreground group-hover:text-foreground flex-1 truncate">{task.title}</span>
-                          <button
-                            onClick={() => setShowSchedule(showSchedule === task.id ? null : task.id)}
-                            className="opacity-0 group-hover:opacity-100 text-[10px] text-muted-foreground hover:text-brand-cyan shrink-0"
-                            title="排入本周"
-                          >
-                            📅
-                          </button>
-                          <button
+                      {/* All done empty state */}
+                      {allDone && (
+                        <p className="text-xs text-slate-500 text-center py-3">本周该分类暂无待办 ✓</p>
+                      )}
+
+                      {sortedTasks.map((task) => {
+                        const isDone = task.status === "done";
+
+                        // Skip done tasks on mobile when collapsed
+                        if (isDone && collapsedDone[cat]) return null;
+
+                        return (
+                          <motion.div
+                            key={task.id}
+                            layout
+                            transition={{ type: "spring", stiffness: 500, damping: 35, mass: 1 }}
+                            className={`group flex items-center gap-2 rounded px-2 py-1.5 transition-all duration-200 cursor-pointer ${
+                              isDone
+                                ? "opacity-40 hover:opacity-60"
+                                : "hover:bg-black/5 dark:hover:bg-white/5"
+                            }`}
                             onClick={() => toggleOngoingDone(task)}
-                            className="opacity-0 group-hover:opacity-100 text-[10px] text-muted-foreground hover:text-emerald-400 shrink-0"
-                            title="标记完成"
                           >
-                            ✓
-                          </button>
-                        </div>
-                      ))}
+                            {/* Check / dot */}
+                            {isDone ? (
+                              <Check className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
+                            ) : (
+                              <span className={`h-1.5 w-1.5 rounded-full ${cs.dot} shrink-0`} />
+                            )}
+
+                            {/* Title */}
+                            <span
+                              className={`text-sm flex-1 truncate ${
+                                isDone
+                                  ? "text-slate-400 line-through"
+                                  : "text-muted-foreground group-hover:text-foreground"
+                              }`}
+                            >
+                              {task.title}
+                            </span>
+
+                            {/* Actions — hidden for done tasks */}
+                            {!isDone && (
+                              <>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setShowSchedule(showSchedule === task.id ? null : task.id);
+                                  }}
+                                  className="opacity-0 group-hover:opacity-100 text-[10px] text-muted-foreground hover:text-brand-cyan shrink-0"
+                                  title="排入本周"
+                                >
+                                  📅
+                                </button>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleOngoingDone(task);
+                                  }}
+                                  className="opacity-0 group-hover:opacity-100 text-[10px] text-muted-foreground hover:text-emerald-400 shrink-0"
+                                  title="标记完成"
+                                >
+                                  ✓
+                                </button>
+                              </>
+                            )}
+                          </motion.div>
+                        );
+                      })}
 
                       {/* 排入日程选择器 */}
                       {showSchedule && ongoingTasks.some((t) => t.id === showSchedule) && (
@@ -408,6 +481,23 @@ export function WeekPlanner() {
                             ))}
                           </div>
                         </div>
+                      )}
+
+                      {/* Mobile collapse toggle for done tasks */}
+                      {doneTasks.length > 0 && (
+                        <button
+                          onClick={() =>
+                            setCollapsedDone((prev) => ({
+                              ...prev,
+                              [cat]: !prev[cat],
+                            }))
+                          }
+                          className="w-full text-[10px] text-slate-500 hover:text-slate-400 py-1 transition-colors sm:hidden"
+                        >
+                          {collapsedDone[cat]
+                            ? `显示 ${doneTasks.length} 个已完成任务`
+                            : `收起已完成任务`}
+                        </button>
                       )}
 
                       {/* 添加按钮 */}
