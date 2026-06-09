@@ -61,9 +61,9 @@ export function WeekPlanner() {
   const [weeklyTasks, setWeeklyTasks] = useState<WeeklyTask[]>([]);
   const [ongoingTasks, setOngoingTasks] = useState<OngoingTask[]>([]);
   const [collapsedDone, setCollapsedDone] = useState<Record<Category, boolean>>({
-    "学习": true,
-    "竞赛": true,
-    "杂事": true,
+    "学习": false,
+    "竞赛": false,
+    "杂事": false,
   });
   const [loading, setLoading] = useState(true);
   const [fading, setFading] = useState(false);
