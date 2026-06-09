@@ -67,6 +67,7 @@ const categories: Category[] = [
       { name: "Figma", url: "https://figma.com", color: "from-pink-500/20", desc: "UI 设计" },
       { name: "Obsidian", url: "https://obsidian.md", color: "from-purple-600/20", desc: "个人知识库" },
       { name: "Tavily", url: "https://tavily.com", color: "from-cyan-500/20", desc: "AI 搜索 API" },
+      { name: "Motionsite", url: "https://motionsites.ai", color: "from-cyan-500/20", desc: "AI 动效网站生成" },
       { name: "Coze", url: "https://www.coze.cn", color: "from-rose-500/20", desc: "AI Bot 搭建" },
     ],
   },
