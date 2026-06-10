@@ -16,6 +16,7 @@ const projects = [
     techTags: ["Next.js", "Supabase", "DeepSeek", "Playwright"],
     links: [
       { label: "GitHub", href: "https://github.com/Kaya-yan/outsight-project" },
+      { label: "项目介绍", href: "/outsight-landing.html" },
     ],
   },
   {
