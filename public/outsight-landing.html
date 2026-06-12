@@ -3,7 +3,7 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>OutSight — 英语主流媒体话语研究协作平台</title>
   <meta name="description" content="OutSight 是面向话语研究者的全栈协作平台，提供多源语料采集、AI 辅助编码、双人一致性校验与统计分析能力。">
 
@@ -64,6 +64,26 @@
     /* Selection */
     ::selection { background: var(--accent-glow); color: var(--ink); }
 
+    /* Global image safety */
+    img { max-width: 100%; height: auto; display: block; }
+
+    /* Touch feedback */
+    @media (hover: none) {
+      .tech-card:active { transform: translateY(-2px); }
+      .feature-img:active img { transform: scale(1.02); }
+    }
+
+    /* Reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+      .particles { display: none; }
+      .reveal { opacity: 1; transform: none; }
+    }
+
     /* Utility */
     .container {
       max-width: 1200px;
@@ -72,6 +92,9 @@
     }
     @media (max-width: 768px) {
       .container { padding: 0 1.25rem; }
+    }
+    @media (max-width: 480px) {
+      .container { padding: 0 1rem; }
     }
 
     /* Glow text effect */
@@ -102,9 +125,15 @@
       color: var(--bg-deep);
       box-shadow: 0 4px 20px var(--accent-glow);
     }
-    .btn-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 30px var(--accent-glow);
+    @media (hover: hover) {
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 30px var(--accent-glow);
+      }
+    }
+    .btn-primary:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 10px var(--accent-glow);
     }
     .btn-outline {
       background: transparent;
@@ -112,10 +141,16 @@
       border: 1px solid var(--accent);
       box-shadow: 0 0 15px var(--accent-glow);
     }
-    .btn-outline:hover {
+    @media (hover: hover) {
+      .btn-outline:hover {
+        background: var(--accent);
+        color: var(--bg-deep);
+        box-shadow: 0 4px 25px var(--accent-glow);
+      }
+    }
+    .btn-outline:active {
       background: var(--accent);
       color: var(--bg-deep);
-      box-shadow: 0 4px 25px var(--accent-glow);
     }
 
     /* Section base */
@@ -166,8 +201,12 @@
       text-decoration: none;
       font-size: 0.9rem;
       transition: color 0.3s;
+      padding: 0.25rem 0;
     }
-    .nav-links a:hover { color: var(--accent); }
+    @media (hover: hover) {
+      .nav-links a:hover { color: var(--accent); }
+    }
+    .nav-links a:active { color: var(--accent); }
     .nav-toggle {
       display: none;
       background: none;
@@ -175,8 +214,16 @@
       color: var(--ink);
       font-size: 1.5rem;
       cursor: pointer;
+      width: 44px;
+      height: 44px;
+      line-height: 44px;
+      text-align: center;
+      border-radius: 8px;
+      transition: background 0.2s;
     }
+    .nav-toggle:active { background: rgba(255,255,255,0.05); }
     @media (max-width: 768px) {
+      .nav { padding-top: max(1rem, env(safe-area-inset-top)); }
       .nav-links {
         display: none;
         position: absolute;
@@ -186,11 +233,18 @@
         background: rgba(10, 5, 20, 0.95);
         backdrop-filter: blur(20px);
         flex-direction: column;
-        padding: 1.5rem 2rem;
-        gap: 1rem;
+        padding: 1.5rem 2rem max(1.5rem, env(safe-area-inset-bottom));
+        gap: 0;
         border-bottom: 1px solid var(--rule);
       }
       .nav-links.active { display: flex; }
+      .nav-links li { border-bottom: 1px solid var(--rule); }
+      .nav-links li:last-child { border-bottom: none; }
+      .nav-links a {
+        display: block;
+        padding: 0.875rem 0;
+        font-size: 1rem;
+      }
       .nav-toggle { display: block; }
     }
 
@@ -228,6 +282,9 @@
       z-index: 2;
       padding-top: 6rem;
       padding-bottom: 4rem;
+    }
+    @media (max-width: 768px) {
+      .hero-content { padding-top: 5rem; padding-bottom: 3rem; }
     }
     .hero-badge {
       display: inline-flex;
@@ -302,8 +359,18 @@
       margin-top: 0.25rem;
     }
     @media (max-width: 768px) {
-      .hero-stats { gap: 1.5rem; flex-wrap: wrap; }
+      .hero-stats {
+        gap: 1.5rem;
+        flex-wrap: wrap;
+        margin-top: 2.5rem;
+        padding-top: 1.5rem;
+      }
       .hero-stat .num { font-size: 1.5rem; }
+    }
+    @media (max-width: 480px) {
+      .hero-stats { gap: 1rem; }
+      .hero-stat .num { font-size: 1.25rem; }
+      .hero-stat .label { font-size: 0.7rem; }
     }
 
     /* ========== SECTIONS COMMON ========== */
@@ -380,6 +447,10 @@
       .problem-grid { grid-template-columns: 1fr; gap: 2rem; }
       .problem { padding: 4rem 0; }
     }
+    @media (max-width: 480px) {
+      .problem { padding: 3rem 0; }
+      .problem-grid { gap: 1.5rem; }
+    }
 
     /* ========== FEATURES ========== */
     .features {
@@ -419,8 +490,8 @@
       display: block;
       transition: transform 0.5s ease;
     }
-    .feature-img:hover img {
-      transform: scale(1.03);
+    @media (hover: hover) {
+      .feature-img:hover img { transform: scale(1.03); }
     }
     .feature-img::after {
       content: '';
@@ -465,6 +536,17 @@
       }
       .feature-card:nth-child(even) > * { direction: ltr; }
       .features { padding: 4rem 0; }
+      .feature-content h3 { font-size: 1.35rem; }
+    }
+    @media (max-width: 480px) {
+      .features { padding: 3rem 0; }
+      .features-header { margin-bottom: 2.5rem; }
+      .feature-card,
+      .feature-card:nth-child(even) {
+        gap: 1.25rem;
+        margin-bottom: 3rem;
+      }
+      .feature-content p { font-size: 0.9rem; }
     }
 
     /* ========== TECH HIGHLIGHTS ========== */
@@ -500,10 +582,12 @@
       padding: 2rem;
       transition: all 0.4s ease;
     }
-    .tech-card:hover {
-      border-color: var(--accent);
-      box-shadow: 0 0 30px var(--accent-glow);
-      transform: translateY(-4px);
+    @media (hover: hover) {
+      .tech-card:hover {
+        border-color: var(--accent);
+        box-shadow: 0 0 30px var(--accent-glow);
+        transform: translateY(-4px);
+      }
     }
     .tech-card .icon {
       width: 48px;
@@ -533,6 +617,13 @@
     @media (max-width: 768px) {
       .tech-grid { grid-template-columns: 1fr; }
       .tech { padding: 4rem 0; }
+      .tech-card { padding: 1.5rem; }
+    }
+    @media (max-width: 480px) {
+      .tech { padding: 3rem 0; }
+      .tech-card { padding: 1.25rem; }
+      .tech-card h4 { font-size: 1rem; }
+      .tech-card p { font-size: 0.85rem; }
     }
 
     /* ========== STATS STRIP ========== */
@@ -568,6 +659,12 @@
       .stats-grid { grid-template-columns: repeat(2, 1fr); }
       .stat-item .num { font-size: 1.8rem; }
     }
+    @media (max-width: 480px) {
+      .stats-strip { padding: 2.5rem 0; }
+      .stats-grid { gap: 1.25rem; }
+      .stat-item .num { font-size: 1.5rem; }
+      .stat-item .label { font-size: 0.75rem; }
+    }
 
     /* ========== CTA ========== */
     .cta {
@@ -601,12 +698,20 @@
       font-size: 1.1rem;
       color: var(--ink-dim);
       max-width: 500px;
-      margin: 0 auto 2.5rem;
+      margin: 0 auto;
+    }
+    @media (max-width: 768px) {
+      .cta { padding: 5rem 0; }
+      .cta p { font-size: 1rem; }
+    }
+    @media (max-width: 480px) {
+      .cta { padding: 3.5rem 0; }
     }
 
     /* ========== FOOTER ========== */
     .footer {
       padding: 3rem 0;
+      padding-bottom: max(3rem, env(safe-area-inset-bottom));
       border-top: 1px solid var(--rule);
       text-align: center;
     }
@@ -689,7 +794,7 @@
         <li><a href="#tech">技术亮点</a></li>
         <li><a href="#cta">开始使用</a></li>
       </ul>
-      <button class="nav-toggle" id="navToggle">&#9776;</button>
+      <button class="nav-toggle" id="navToggle" aria-label="菜单" aria-expanded="false">&#9776;</button>
     </div>
   </nav>
 
@@ -770,7 +875,7 @@
           <img src="assets/feature-collection.jpg" alt="多源语料采集">
         </div>
         <div class="feature-content">
-          <div class="section-label">01 / 语料采集</div>
+          <div class="section-label">语料采集</div>
           <h3>多源融合自动采集</h3>
           <p>
             整合 RSS、NewsAPI、GDELT 和搜索引擎四大数据源，覆盖 BBC、Guardian、NYT、
@@ -793,7 +898,7 @@
           <img src="assets/feature-ai.jpg" alt="AI 辅助编码">
         </div>
         <div class="feature-content">
-          <div class="section-label">02 / AI 辅助</div>
+          <div class="section-label">AI 辅助</div>
           <h3>AI 驱动的编码辅助</h3>
           <p>
             基于大语言模型的预读分析流水线，自动提取摘要、情感倾向、话语框架、
@@ -814,7 +919,7 @@
           <img src="assets/feature-collab.jpg" alt="协作编码">
         </div>
         <div class="feature-content">
-          <div class="section-label">03 / 协作编码</div>
+          <div class="section-label">协作编码</div>
           <h3>团队协作与一致性校验</h3>
           <p>
             支持任务分配、单人编码、双人编码等多种工作模式。内置 Cohen's Kappa 系数计算，
@@ -835,7 +940,7 @@
           <img src="assets/feature-analytics.jpg" alt="统计分析">
         </div>
         <div class="feature-content">
-          <div class="section-label">04 / 统计分析</div>
+          <div class="section-label">统计分析</div>
           <h3>深度统计与语言学分析</h3>
           <p>
             提供框架分布饼图、时间线图、媒体热力图等可视化分析。内置语料库语言学工具：
@@ -964,7 +1069,9 @@
     const navToggle = document.getElementById('navToggle');
     const navLinks = document.getElementById('navLinks');
     navToggle.addEventListener('click', () => {
-      navLinks.classList.toggle('active');
+      const isOpen = navLinks.classList.toggle('active');
+      navToggle.textContent = isOpen ? '×' : '☰';
+      navToggle.setAttribute('aria-expanded', isOpen);
     });
 
     // Smooth scroll for anchor links
@@ -990,9 +1097,10 @@
     }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
     revealElements.forEach(el => revealObserver.observe(el));
 
-    // Floating particles
+    // Floating particles (fewer on mobile for performance)
     const particlesContainer = document.getElementById('particles');
-    for (let i = 0; i < 30; i++) {
+    const particleCount = window.innerWidth < 768 ? 12 : 30;
+    for (let i = 0; i < particleCount; i++) {
       const p = document.createElement('div');
       p.className = 'particle';
       p.style.left = Math.random() * 100 + '%';
