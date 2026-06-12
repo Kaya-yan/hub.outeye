@@ -30,6 +30,7 @@ const categories: Category[] = [
       { name: "Gemini", url: "https://gemini.google.com", desc: "Google 多模态" },
       { name: "Cursor", url: "https://cursor.sh", desc: "AI 原生编辑器" },
       { name: "Copilot", url: "https://github.com/features/copilot", desc: "代码补全" },
+      { name: "Arena", url: "https://arena.ai", desc: "AI 模型竞技场" },
     ],
   },
   {
