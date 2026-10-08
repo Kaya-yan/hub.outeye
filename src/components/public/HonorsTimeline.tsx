@@ -67,7 +67,7 @@ export function HonorsTimeline({ coreHonors }: Props) {
                   )}
                   <div className="flex-1" />
 
-                  {honor.status === "进行中" && honor.materials.length > 0 && (
+                  {honor.status !== "已获得" && honor.materials.length > 0 && (
                     <div className="shrink-0 mt-3">
                       <div className="h-1.5 w-full rounded-full bg-white/10 overflow-hidden">
                         <motion.div
@@ -123,7 +123,7 @@ export function HonorsTimeline({ coreHonors }: Props) {
               <div className={`mt-2 rounded-xl border ${colors.border} bg-card/40 backdrop-blur-sm p-4`}>
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className={`text-[11px] ${colors.text}`}>{honor.level}</span>
-                  {honor.status === "进行中" && (
+                  {honor.status !== "已获得" && (
                     <span className="text-[10px] text-brand-cyan bg-brand-cyan/10 rounded px-2 py-0.5">{honor.status}</span>
                   )}
                 </div>
@@ -131,7 +131,7 @@ export function HonorsTimeline({ coreHonors }: Props) {
                 {honor.subtitle && (
                   <p className="mt-1 text-xs text-slate-400 line-clamp-1">{honor.subtitle}</p>
                 )}
-                {honor.status === "进行中" && honor.materials.length > 0 && (
+                {honor.status !== "已获得" && honor.materials.length > 0 && (
                   <div className="mt-3">
                     <div className="h-1.5 w-full rounded-full bg-white/10 overflow-hidden">
                       <motion.div

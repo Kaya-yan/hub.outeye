@@ -3,7 +3,7 @@ export interface HonorEntry {
   title: string;
   subtitle: string;
   level: string;
-  status: "进行中" | "已获得";
+  status: "进行中" | "审核中" | "已获得";
   progress: number;
   materials: { name: string; done: boolean }[];
   images: string[];
@@ -80,13 +80,13 @@ export const coreHonors: HonorEntry[] = [
     title: "挑战杯揭榜挂帅",
     subtitle: "XH-202620 学科垂类大模型与创新应用开发",
     level: "国家级",
-    status: "进行中",
-    progress: 60,
+    status: "审核中",
+    progress: 100,
     materials: [
       { name: "报名表", done: true },
       { name: "方案书", done: true },
-      { name: "答辩PPT", done: false },
-      { name: "演示视频", done: false },
+      { name: "答辩PPT", done: true },
+      { name: "演示视频", done: true },
     ],
     images: [],
   },
@@ -124,7 +124,7 @@ export const coreHonors: HonorEntry[] = [
     year: "2025",
     title: "山东大学自强之星",
     subtitle: "",
-    level: "校级最高荣誉",
+    level: "校级",
     status: "已获得",
     progress: 100,
     materials: [],
@@ -157,12 +157,13 @@ export const allHonors: AllHonorEntry[] = [
   { year: "2026", title: "「春日暖忆，拾光悟行」故事征集活动", level: "院级一等奖", image: "/assets/images/honors/spring-story-collection-1st.jpg" },
   { year: "2026", title: "趣味运动会团队二等奖", level: "校级", image: "/assets/images/honors/fun-games-2nd.jpg" },
   { year: "2025.12", title: "第一届新文科国际会议", level: "学术会议", note: "投稿并获参会邀请 · 香港新文科答辩", image: "/assets/images/honors/new-liberal-arts-cert.jpg" },
-  { year: "2025", title: "自强之星", level: "校级最高荣誉", image: "/assets/images/honors/self-reliance-star.jpg" },
+  { year: "2025", title: "自强之星", level: "校级", image: "/assets/images/honors/self-reliance-star.jpg" },
   { year: "2025", title: "桥见中国·BRI沿线国家中国形象调研团", level: "院级二等奖", note: "负责人 · 寒假社会实践", image: "/assets/images/honors/winter-social-practice.jpg" },
   { year: "2025", title: "红色故事短剧大赛三等奖", level: "院级", image: "/assets/images/honors/red-drama-3rd.jpg" },
   { year: "2025", title: "军训歌咏比赛一等奖", level: "院级", image: "/assets/images/honors/military-choir-1st.jpg" },
   { year: "2025", title: "爱国主题教育征文活动三等奖", level: "校级", image: "/assets/images/honors/patriotic-essay-3rd.jpg" },
   { year: "2025", title: "拔河比赛第三名", level: "校级", image: "/assets/images/honors/tug-war-3rd.jpg" },
+  { year: "2025", title: "山东大学（威海）第四届武术比赛", level: "校级三等奖", image: "/assets/images/honors/martial-arts-3rd.png" },
   { year: "2025", title: "军训优秀学员", level: "校级", image: "/assets/images/honors/military-excellent.jpg" },
   { year: "2025", title: "砺刃-2023军事基础技能比武 · 战斗小组单项科目第二名", level: "校级", image: "/assets/images/honors/military-2nd.jpg" },
   { year: "2025", title: '第四届"新生杯"创业计划竞赛优胜奖', level: "校级", image: "/assets/images/honors/freshmen-cup-merit.jpg" },

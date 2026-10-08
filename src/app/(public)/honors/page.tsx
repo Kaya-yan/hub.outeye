@@ -61,7 +61,7 @@ export default function HonorsPage() {
                       <span className={`rounded px-2 py-0.5 text-xs ${colors.text} ${colors.bg}/10`}>
                         {honor.level}
                       </span>
-                      {honor.status === "进行中" && (
+                      {honor.status !== "已获得" && (
                         <span className="rounded bg-brand-cyan/10 px-2 py-0.5 text-xs text-brand-cyan">
                           {honor.status}
                         </span>
@@ -74,7 +74,7 @@ export default function HonorsPage() {
                     )}
 
                     {/* Progress bar for in-progress items */}
-                    {honor.status === "进行中" && (
+                    {honor.status !== "已获得" && (
                       <div className="mt-4">
                         <div className="h-1.5 w-full overflow-hidden rounded-full bg-zinc-200 dark:bg-white/10">
                           <div
@@ -115,7 +115,7 @@ export default function HonorsPage() {
                     )}
 
                     {/* Placeholder for missing images */}
-                    {honor.images.length === 0 && honor.status !== "进行中" && (
+                    {honor.images.length === 0 && honor.status === "已获得" && (
                       <div className="mt-4 flex gap-2">
                         <div className="h-20 w-28 rounded-lg border border-dashed border-black/8 dark:border-white/10 bg-black/[0.02] dark:bg-white/[0.02] flex items-center justify-center text-xs text-muted-foreground/70">
                           证书图片
