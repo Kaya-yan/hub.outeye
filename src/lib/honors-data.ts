@@ -14,7 +14,7 @@ export interface AllHonorEntry {
   title: string;
   level: string;
   note?: string;
-  image: string;
+  image?: string;
 }
 
 export function getLevelColor(level: string) {
@@ -35,6 +35,15 @@ export function getLevelColor(level: string) {
     hoverShadow: "hover:shadow-[0_8px_30px_rgba(245,158,11,0.15)]",
     dot: "bg-amber-500",
     glow: "shadow-[0_0_8px_rgba(245,158,11,0.5)]",
+  };
+  if (level.includes("市级")) return {
+    bg: "bg-violet-500",
+    text: "text-violet-400",
+    border: "border-violet-500/30",
+    hoverBorder: "hover:border-violet-500/50",
+    hoverShadow: "hover:shadow-[0_8px_30px_rgba(139,92,246,0.15)]",
+    dot: "bg-violet-500",
+    glow: "shadow-[0_0_8px_rgba(139,92,246,0.5)]",
   };
   if (level.includes("校级")) return {
     bg: "bg-blue-500",
@@ -82,6 +91,36 @@ export const coreHonors: HonorEntry[] = [
     images: [],
   },
   {
+    year: "2026",
+    title: "国家安全教育主题宣讲大赛",
+    subtitle: "",
+    level: "校级一等奖",
+    status: "已获得",
+    progress: 100,
+    materials: [],
+    images: ["/assets/images/honors/national-security-lecture-1st.jpg"],
+  },
+  {
+    year: "2026",
+    title: "TRAE AI 城市创造力大赛威海站第二名",
+    subtitle: "",
+    level: "市级",
+    status: "已获得",
+    progress: 100,
+    materials: [],
+    images: [],
+  },
+  {
+    year: "2025-2026",
+    title: "优秀学生干部",
+    subtitle: "",
+    level: "院级",
+    status: "已获得",
+    progress: 100,
+    materials: [],
+    images: [],
+  },
+  {
     year: "2025",
     title: "山东大学自强之星",
     subtitle: "",
@@ -111,29 +150,11 @@ export const coreHonors: HonorEntry[] = [
     materials: [],
     images: ["/assets/images/honors/winter-social-practice.jpg"],
   },
-  {
-    year: "2025",
-    title: '第四届"新生杯"创业计划竞赛优胜奖',
-    subtitle: "荣光薪传—全民国防教育服务平台",
-    level: "校级",
-    status: "已获得",
-    progress: 100,
-    materials: [],
-    images: ["/assets/images/honors/freshmen-cup-merit.jpg"],
-  },
-  {
-    year: "2025",
-    title: "军训优秀学员",
-    subtitle: "军事训练期间表现突出",
-    level: "校级",
-    status: "已获得",
-    progress: 100,
-    materials: [],
-    images: ["/assets/images/honors/military-excellent.jpg"],
-  },
 ];
 
 export const allHonors: AllHonorEntry[] = [
+  { year: "2026", title: "国家安全教育主题宣讲大赛", level: "校级一等奖", image: "/assets/images/honors/national-security-lecture-1st.jpg" },
+  { year: "2026", title: "「春日暖忆，拾光悟行」故事征集活动", level: "院级一等奖", image: "/assets/images/honors/spring-story-collection-1st.jpg" },
   { year: "2026", title: "趣味运动会团队二等奖", level: "校级", image: "/assets/images/honors/fun-games-2nd.jpg" },
   { year: "2025.12", title: "第一届新文科国际会议", level: "学术会议", note: "投稿并获参会邀请 · 香港新文科答辩", image: "/assets/images/honors/new-liberal-arts-cert.jpg" },
   { year: "2025", title: "自强之星", level: "校级最高荣誉", image: "/assets/images/honors/self-reliance-star.jpg" },

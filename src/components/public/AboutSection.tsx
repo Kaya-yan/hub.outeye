@@ -61,7 +61,7 @@ function ResumePhoto() {
 
 /* ── Section ───────────────────────────────────── */
 const badges = ["翻译学院本科生", "中共党员", "2025年度自强之星", "OutEye系列维护者"];
-const metrics = ["4+ AI 产品", "21,381 篇语料", "800 亿 Token", "17 项荣誉"];
+const metrics = ["4+ AI 产品", "21,381 篇语料", "800 亿 Token", "19 项荣誉"];
 const tags = ["OutEye 2.0", "OutEye 3.0", "OutEye 4.0", "挑战杯"];
 
 export function AboutSection() {
