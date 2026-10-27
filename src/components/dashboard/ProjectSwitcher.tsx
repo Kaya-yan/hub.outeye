@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useCallback } from "react";
 
 const projects = [
   {
@@ -10,40 +10,45 @@ const projects = [
     statusColor: "bg-emerald-500",
     stat: "21,381 篇语料",
     screenshot: "/assets/images/projects/outeye2/screenshot-1.jpg",
-    href: "https://github.com/Kaya-yan/outsight-project",
+    href: "https://v2.outeye.top",
     external: true,
   },
   {
     name: "OutEye 3.0",
     codename: "OutEdu",
-    status: "方案阶段",
-    statusColor: "bg-yellow-500",
-    stat: "60% 完成",
+    status: "运行中",
+    statusColor: "bg-emerald-500",
+    stat: "12 大理论工程化",
     screenshot: "/assets/images/projects/outeye3/screenshot-1.jpg",
-    href: null,
-    toast: "方案阶段，暂无线上演示，可查看项目文档",
+    href: "https://edu.outeye.top",
+    external: true,
   },
   {
     name: "OutEye 4.0",
     codename: "Pulse",
-    status: "开发中",
-    statusColor: "bg-blue-500",
-    stat: "200 条评论",
+    status: "运行中",
+    statusColor: "bg-emerald-500",
+    stat: "6 维传播效果分析",
     screenshot: "/assets/images/projects/outeye4/screenshot-1.jpg",
-    href: null,
-    toast: "开发中，敬请期待",
+    href: "https://yh.outeye.top",
+    external: true,
+  },
+  {
+    name: "太虚册",
+    codename: "Honglou Shiyi",
+    status: "运行中",
+    statusColor: "bg-emerald-500",
+    stat: "红楼梦互动叙事",
+    screenshot: "/assets/images/projects/honglou/screenshot-1.jpg",
+    href: "https://honglou-shiyi.outeye.top",
+    external: true,
   },
 ];
 
 export function ProjectSwitcher() {
-  const [toast, setToast] = useState<string | null>(null);
-
-  const handleClick = useCallback((project: typeof projects[number]) => {
+  const handleClick = useCallback((project: (typeof projects)[number]) => {
     if (project.href) {
       window.open(project.href, "_blank", "noopener,noreferrer");
-    } else if (project.toast) {
-      setToast(project.toast);
-      setTimeout(() => setToast(null), 2500);
     }
   }, []);
 
@@ -74,18 +79,12 @@ export function ProjectSwitcher() {
                 {project.status} · {project.stat}
               </p>
               <p className="mt-2 text-xs text-brand-cyan opacity-0 transition-opacity group-hover:opacity-100">
-                {project.external ? "打开仓库 →" : "查看 →"}
+                打开站点 →
               </p>
             </div>
           </button>
         ))}
       </div>
-
-      {toast && (
-        <div className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-lg border border-black/8 dark:border-white/10 bg-background/90 backdrop-blur-md px-5 py-3 text-sm text-foreground shadow-lg">
-          {toast}
-        </div>
-      )}
     </section>
   );
 }
